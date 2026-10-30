@@ -1,6 +1,7 @@
 'use server'
 
 import db from "@/lib/db"
+import { findUserByEmail } from "@/lib/user"
 import { verifyEmail } from "../../cadastro/form/verify-types"
 import crypto from 'crypto'
 import { sendEmail } from "@/app/api/email/reset-password/send"
@@ -14,11 +15,7 @@ export default async function sendEmailAction(email: string) {
         return false 
     }
 
-    const user = await db.usuario.findUnique({
-        where: {
-            email: email
-        }
-    })
+    const user = await findUserByEmail(email)
 
     if (!user) {
         return false

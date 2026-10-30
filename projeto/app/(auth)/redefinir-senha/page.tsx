@@ -1,13 +1,10 @@
-'use client'
-
 import './unique.css'
 import './responsive.css'
-import Logo from '@/components/ui/logo'
 import ResetPassword from './form/form'
 
-export default function Login() {
-    
-    
+export default function ResetPasswordPage() {
+
+
     return (
         <>
             <div id='img'>

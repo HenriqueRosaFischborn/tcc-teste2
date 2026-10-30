@@ -1,6 +1,6 @@
 'use server'
 
-import db from "@/lib/db"
+import { findUserByEmail } from "@/lib/user"
 import { verifyEmail } from "../../cadastro/form/verify-types"
 
 
@@ -15,11 +15,7 @@ export default async function verifyEmailForgotPassword(email: string) {
         return true
     }
 
-    const user = await db.usuario.findUnique({
-        where: {
-            email: email
-        }
-    })
+    const user = await findUserByEmail(email)
 
     if (!user) {
         return true

@@ -8,7 +8,32 @@
         padding: 30px 0px;
     }
 
-    #login-content img {
-        width: 100px;
+    #login-content {
+        width: 100%;
+        padding: 10px 20px 30px 20px;
+    }
+
+    /* Só o logo encolhe. */
+    #login-content > a img {
+        width: 130px;
+        height: auto;
+    }
+
+    #login-content h1 {
+        margin-bottom: 22px;
+    }
+
+    /* No celular o formulário ocupa toda a largura útil da tela. */
+    #login-content .form {
+        max-width: 100%;
+        gap: 20px;
+    }
+
+    #login-content p {
+        font-size: 11pt;
+    }
+
+    .auth-alt {
+        margin-top: 16px;
     }
 }

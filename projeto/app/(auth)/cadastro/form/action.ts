@@ -4,6 +4,7 @@ import { FormState } from "@/lib/types"
 import { verifyEmail, verifyTypes } from "./verify-types"
 import  *  as  argon2  from  "argon2"
 import  db  from "@/lib/db"
+import { findUserByEmail } from "@/lib/user"
 import { signIn } from "@/auth"
 
 
@@ -43,15 +44,11 @@ export default async function registerAction(preState: FormState, formdata: Form
         message.push('Email inválido')
     }
 
-    const user = await db.usuario.findMany({
-        where: {
-            email: resData.email
-        }
-    })
-    
-    if (user.length !== 0) {
+    const user = await findUserByEmail(resData.email)
+
+    if (user) {
        error = true
-       message.push('Este email já existe') 
+       message.push('Este email já existe')
     }
 
     if (error) {

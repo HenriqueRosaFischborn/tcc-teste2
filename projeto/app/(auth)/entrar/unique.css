@@ -1,15 +1,18 @@
 article {
     flex-direction: row;
+    align-items: stretch;
 }
 
+/* A coluna da foto acompanha a altura da página inteira, sem faixas brancas. */
 #img {
     width: 35%;
+    flex-shrink: 0;
 }
 
 #img img {
     display: block;
     width: 100%;
-    height: 90vh;
+    height: 100%;
     object-fit: cover;
 }
 
@@ -18,11 +21,18 @@ article {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 15px;
+    box-sizing: border-box;
+    padding: 40px 20px;
+}
+
+/* Formulário e botão do Google com a mesma largura, centralizados. */
+#login-content .form,
+#login-content .google-signin {
+    width: 100%;
+    max-width: 420px;
 }
 
 #login-content .form {
-    width: 50%;
     align-items: center;
 }
 

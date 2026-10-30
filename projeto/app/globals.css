@@ -227,6 +227,72 @@ p {
   text-decoration: underline;
 }
 
+/* ---------- Telas de autenticação (entrar / cadastro / senha) ---------- */
+
+/* Botão de login com o Google: ocupa a mesma largura dos outros botões do formulário. */
+.button.google {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  background-color: white;
+  color: var(--mainblack);
+  border: solid 1px var(--darkgray);
+}
+
+.button.google:hover {
+  background-color: #f2f2f2;
+}
+
+.button.google img {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+}
+
+/* Bloco do botão do Google junto do separador "ou". */
+.google-signin {
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-top: 22px;
+}
+
+.google-signin form {
+  justify-content: center;
+}
+
+.auth-divider {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 16px;
+  color: var(--darkgray);
+  font-size: 11pt;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background-color: var(--ligthgray);
+}
+
+/* Link secundário abaixo do formulário ("não possui conta?", "voltar"). */
+.auth-alt {
+  margin-top: 18px;
+  text-align: center;
+}
+
+.auth-alt a {
+  color: var(--mainred);
+}
+
 .obs {
   font-style: italic;
 }
