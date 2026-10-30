@@ -1,6 +1,6 @@
 import { Text, Section, Button, Link } from '@react-email/components';
 import type { CSSProperties } from 'react';
-import { EmailLayout, SITE_URL, cores, fontes } from './layout';
+import { EmailLayout, SITE_URL, cores, fontes } from './email-layout';
 
 interface ResetMessageEmailProps {
   email: string;

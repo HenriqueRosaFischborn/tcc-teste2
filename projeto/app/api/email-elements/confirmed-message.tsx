@@ -1,7 +1,7 @@
 import { Heading, Text, Section, Row, Column, Button } from '@react-email/components';
 import type { CSSProperties } from 'react';
 import { Player } from '@/lib/types';
-import { EmailLayout, LINKS, cores, fontes } from './layout';
+import { EmailLayout, LINKS, cores, fontes } from './email-layout';
 
 interface ConfirmedMessageEmailProps {
   inscricao: Player;

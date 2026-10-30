@@ -1,7 +1,7 @@
 import { Heading, Text, Section, Row, Column } from '@react-email/components';
 import type { CSSProperties } from 'react';
 import { Player } from '@/lib/types';
-import { EmailLayout, cores, fontes } from './layout';
+import { EmailLayout, cores, fontes } from './email-layout';
 
 interface RequestedInscriptionEmailProps {
   inscricao: Player;
