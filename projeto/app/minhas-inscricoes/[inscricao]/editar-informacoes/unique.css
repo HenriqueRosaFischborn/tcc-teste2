@@ -115,17 +115,35 @@ summary p {
 }
 
 #warning-box {
-    color: white;
+    position: relative;
     width: 100%;
-    
-    padding: 10px 20px;
-    background-color: #ff8200;
-    border-radius: 10px;
-    border: solid 4px #e47600;
+    padding: 14px 18px 14px 48px;
+    background-color: #fff8e8;
+    border: solid 1px #f1d79b;
+    border-left: solid 4px #e0a406;
+    border-radius: 8px;
 }
 
-#warning-box p{
+#warning-box::before {
+    content: '';
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Ccircle cx='12' cy='12' r='10' stroke='%23e0a406' stroke-width='1.6'/%3E%3Cpath d='M12 10.6v6' stroke='%23e0a406' stroke-width='1.8' stroke-linecap='round'/%3E%3Ccircle cx='12' cy='7.4' r='1.1' fill='%23e0a406'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+}
+
+#warning-box p {
+    margin: 0;
+    font-size: 13pt;
+    line-height: 1.45;
     font-weight: 500;
+    color: #7a5a10;
 }
 
 .select-radios div {

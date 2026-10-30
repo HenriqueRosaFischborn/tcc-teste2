@@ -17,15 +17,104 @@ article {
     text-align: center;
 }
 
+/* Filtros */
+
+#filters {
+    width: 100%;
+    flex-direction: column;
+    gap: 14px;
+    padding: 18px 20px;
+    background-color: #fbfbfb;
+    border: solid 1px var(--darkgray);
+    border-radius: 6px;
+}
+
+#filters .fields {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 14px;
+}
+
+#filters .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: auto;
+    min-width: 130px;
+}
+
+#filters .field.search-field {
+    flex: 1 1 260px;
+}
+
+#filters .field span {
+    font-size: 12pt;
+    font-weight: 500;
+    letter-spacing: .06em;
+    color: #6f6f6f;
+}
+
+/* O select em si vem do padrão global (globals.css); aqui só o campo de busca. */
+#filters input {
+    width: 100%;
+    padding: 7px 10px;
+    font-family: inherit;
+    font-size: 12pt;
+    color: var(--mainblack);
+    background-color: white;
+    border: solid 1px var(--darkgray);
+    border-radius: 3px;
+    outline: none;
+}
+
+#filters input:focus {
+    border-color: black;
+}
+
+#filters .summary {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 22px;
+}
+
+#filters .summary span {
+    font-size: 11pt;
+    color: #6f6f6f;
+}
+
+#filters .summary button {
+    padding: 0;
+    border: none;
+    background: none;
+    font-family: inherit;
+    font-size: 11.5pt;
+    font-weight: 500;
+    color: var(--mainblue);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+}
+
+#filters .summary button:hover {
+    color: #024b6e;
+}
+
 .tournament {
     width: 100%;
     justify-content: space-between;
     gap: 50px;
     align-items: stretch;
-    border: solid 1px lightgray;
-    border-radius: 5px;
-    padding: 15px 30px;
-    
+    border: solid 1px var(--ligthgray);
+    border-radius: 6px;
+    padding: 18px 24px;
+    transition: border-color .15s ease;
+}
+
+.tournament:hover {
+    border-color: var(--darkgray);
 }
 
 .tournament h3{
@@ -43,6 +132,7 @@ article {
     height: auto;
     flex-shrink: 0;
     object-fit: contain; /* Faz a imagem manter a proporção, sempre tentar usar se você precisa garantir que a imagem fique exata sempre */
+    border-radius: 4px;
 }
 
 .tournament .content {
@@ -69,10 +159,6 @@ article {
     gap: 30px;
     justify-content: center;
     width: 100%;
-}
-
-select {
-    position: relative;
 }
 
 

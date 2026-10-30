@@ -3,11 +3,10 @@
 import { useActionState, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { TournamentContext } from '@/lib/context'
-import { findCategory } from './find-category'
 import PlayerFields from './player-fields'
+import { selectCategory } from './select-category'
 import { submitInscription } from './submit-inscription'
 import type {
-  CategoryLookup,
   CategoryStatus,
   Genre,
   InscriptionState,
@@ -157,37 +156,19 @@ export default function InscriptionForm() {
   }, [playerFide, playerCbx, birthDate, genre, identityTouched])
 
   // ---- Categoria (definida pela data de nascimento e pelo gênero) ----
+  // As categorias e divisões chegam prontas do servidor junto com o torneio,
+  // então a escolha é uma conta local: aparece na hora, sem consulta ao servidor.
   const dateComplete = birthDate.trim().length === 10
-  const categoryKey = `${birthDate}|${genre}`
-  const [categoryData, setCategoryData] = useState<{ key: string; result: CategoryLookup } | null>(
-    null
+
+  const categoryResult = useMemo(
+    () =>
+      dateComplete
+        ? selectCategory(tournament.categories ?? [], tournament.divisions ?? [], birthDate, genre)
+        : null,
+    [dateComplete, tournament.categories, tournament.divisions, birthDate, genre]
   )
 
-  useEffect(() => {
-    if (!dateComplete) return
-
-    let cancelled = false
-
-    findCategory(tournament.id, birthDate, genre)
-      .then((result) => {
-        if (!cancelled) setCategoryData({ key: categoryKey, result })
-      })
-      .catch(() => {
-        if (!cancelled) setCategoryData({ key: categoryKey, result: { status: 'failed' } })
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [categoryKey, dateComplete, birthDate, genre, tournament.id])
-
-  // Enquanto a resposta da data/gênero atual não chega, a categoria está carregando.
-  const categoryResult = dateComplete && categoryData?.key === categoryKey ? categoryData.result : null
-  const categoryStatus: CategoryStatus = !dateComplete
-    ? 'idle'
-    : categoryResult === null
-      ? 'loading'
-      : categoryResult.status
+  const categoryStatus: CategoryStatus = categoryResult === null ? 'idle' : categoryResult.status
   const category = categoryResult?.status === 'found' ? categoryResult.category : null
   const price = category?.price ?? 0
 
@@ -196,9 +177,7 @@ export default function InscriptionForm() {
   const identityOk = !hasIds || (nameError === '' && infoError === '')
   const canSubmit = price !== 0 && fieldsComplete && identityOk && receiptName !== ''
   const showCategory =
-    dateComplete &&
-    (categoryStatus === 'loading' || categoryStatus === 'found') &&
-    (!hasIds || infoError === '')
+    dateComplete && categoryStatus === 'found' && (!hasIds || infoError === '')
 
   useEffect(() => {
     if (state.status === 'success') router.replace('/minhas-inscricoes')

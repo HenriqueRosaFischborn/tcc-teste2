@@ -55,41 +55,14 @@ article > .content {
 
 #times div, #select-categorie-sub {
     flex-direction: row;
-    position: relative;
 }
 
 #select-categorie-sub {
     width: 50%;
 }
 
-#select-categorie-sub select {
-    font-size: 13pt;
-}
-
-#times > div::after, #select-categorie-sub::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    right: 5px;
-    width: 25px;
-    height: 25px;
-    
-
-    background-image: url('/icons/arrow.png');
-    background-size: contain;
-    background-repeat: no-repeat;
-    transform: translateY(-50%) rotate(-90deg);
-}
-
-select {
-    display: flex;
-    cursor: pointer;
-    appearance: none;
+#times select, #select-categorie-sub select {
     flex: 1;
-    border: solid 1px var(--darkgray);
-    border-radius: 2px;
-    padding-left: 5px;
-    background-color: white;
 }
 
 #local {

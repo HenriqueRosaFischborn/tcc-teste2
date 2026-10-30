@@ -42,10 +42,9 @@ export type Category = {
 export type CategoryLookup =
   | { status: 'found'; category: Category }
   | { status: 'none' }
-  | { status: 'failed' }
 
 /** Estado da categoria na tela: idle = falta a data de nascimento. */
-export type CategoryStatus = 'idle' | 'loading' | 'found' | 'none' | 'failed'
+export type CategoryStatus = 'idle' | 'found' | 'none'
 
 export type InscriptionState =
   | { status: 'idle' }

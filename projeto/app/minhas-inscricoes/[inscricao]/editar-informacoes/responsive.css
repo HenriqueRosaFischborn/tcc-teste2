@@ -110,4 +110,18 @@
     #qr-div img {
         width: 40%;
     }
+
+    #warning-box {
+        padding: 12px 12px 12px 40px;
+    }
+
+    #warning-box::before {
+        left: 12px;
+        width: 18px;
+        height: 18px;
+    }
+
+    #warning-box p {
+        font-size: 10.5pt;
+    }
 }

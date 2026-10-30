@@ -4,7 +4,7 @@ import { closeInscri, openInscri } from "./editOpenInscri";
 
 export function ButtonClose({id}: {id: number}) {
     return (
-        <button style={{backgroundColor: '#141414' , padding: '5px 30px'}} onClick={async () => {
+        <button style={{padding: '5px 30px'}} onClick={async () => {
             if (confirm('Tem certeza que deseja fechar as inscrições para este torneio? As inscrições já realizadas permanecerão salvas')) {
                 await closeInscri(id)
                 window.location.reload();
@@ -15,7 +15,7 @@ export function ButtonClose({id}: {id: number}) {
 
 export function ButtonOpen({id, dateNow, date_inscri}: {id: number, dateNow: Date, date_inscri: Date}) {
     return (
-        <button style={{backgroundColor: '#141414' , padding: '5px 30px'}} onClick={async () => {
+        <button style={{padding: '5px 30px'}} onClick={async () => {
             if (date_inscri < dateNow) {
                 console.log(date_inscri)
                 dateNow.toLocaleString()

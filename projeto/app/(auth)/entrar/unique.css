@@ -32,5 +32,9 @@ article {
 
 #forgot-my-password {
     color: var(--mainred);
-    
+    transition: color .15s ease;
+}
+
+#forgot-my-password:hover {
+    color: #c51212;
 }

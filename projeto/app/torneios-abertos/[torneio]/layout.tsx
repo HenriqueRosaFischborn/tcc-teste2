@@ -7,6 +7,7 @@ import { redirect } from 'next/navigation'
 import { getSupabaseAdmin } from '@/lib/supabase'
 import classifyTime from '@/lib/classifyTime'
 import TournamentProvider from '@/components/TournmentProvider';
+import type { TournamentCategory, TournamentDivision } from '@/lib/types';
 
 export default async function layoutTorneio({children, params}: {children: React.ReactNode, params: Promise<{ torneio: string }>}) {
     const {torneio} = await params
@@ -32,57 +33,24 @@ export default async function layoutTorneio({children, params}: {children: React
    
     const supabaseAdmin = await getSupabaseAdmin();
 
-    let folder: string | null = null;
-    let folderQr: string | null = null;
-    let reg: string | null = null;
+    const id = String(tournment.id)
 
-    // =======================
-    // Folder
-    // =======================
-    const path = `folders/${tournment.id}`;
+    // As três listas são independentes, então vão em paralelo (a página abre mais rápido).
+    const [folders, qrCodes, regulamentos] = await Promise.all([
+        supabaseAdmin.storage.from("publics").list("folders"),
+        supabaseAdmin.storage.from("publics").list("qrCodes"),
+        supabaseAdmin.storage.from("publics").list("regulamentos"),
+    ])
 
-    const { data: folderFiles, error: folderError } =
-    await supabaseAdmin.storage
-        .from("publics")
-        .list("folders");
+    const publicUrl = (folderName: string) =>
+        supabaseAdmin.storage.from("publics").getPublicUrl(`${folderName}/${id}`).data.publicUrl
 
-    if (!folderError && folderFiles.some(file => file.name === String(tournment.id))) {
-    folder = supabaseAdmin.storage
-        .from("publics")
-        .getPublicUrl(path).data.publicUrl;
-    }
+    const fileExists = (result: { data: { name: string }[] | null, error: unknown }) =>
+        !result.error && Boolean(result.data?.some(file => file.name === id))
 
-    // =======================
-    // QR Code
-    // =======================
-    const pathQr = `qrCodes/${tournment.id}`;
-
-    const { data: qrFiles, error: qrError } =
-    await supabaseAdmin.storage
-        .from("publics")
-        .list("qrCodes");
-
-    if (!qrError && qrFiles.some(file => file.name === String(tournment.id))) {
-    folderQr = supabaseAdmin.storage
-        .from("publics")
-        .getPublicUrl(pathQr).data.publicUrl;
-    }
-
-    // =======================
-    // Regulamento
-    // =======================
-    const pathReg = `regulamentos/${tournment.id}`;
-
-    const { data: regFiles, error: regError } =
-    await supabaseAdmin.storage
-        .from("publics")
-        .list("regulamentos");
-
-    if (!regError && regFiles.some(file => file.name === String(tournment.id))) {
-    reg = supabaseAdmin.storage
-        .from("publics")
-        .getPublicUrl(pathReg).data.publicUrl;
-    }
+    const folder = fileExists(folders) ? publicUrl('folders') : null
+    const folderQr = fileExists(qrCodes) ? publicUrl('qrCodes') : null
+    const reg = fileExists(regulamentos) ? publicUrl('regulamentos') : null
     
     const times = {
         digital: {
@@ -98,6 +66,24 @@ export default async function layoutTorneio({children, params}: {children: React
 
     const classTime = await classifyTime(times.digital.time, times.digital.plus)
     const classTime2 = await classifyTime(times.analog.time, times.analog.plus)
+
+    // Categorias e divisões vão para o formulário, que escolhe a categoria na hora
+    // (sem ida ao servidor). O redirect já devolve os ids como number.
+    const categories: TournamentCategory[] = tournment.categoria.map((categoria) => ({
+        uuid: categoria.uuid,
+        name: categoria.name,
+        price: categoria.value,
+        minYear: categoria.min_y,
+        maxYear: categoria.max_y,
+        divisionId: categoria.default_division
+    }))
+
+    const divisions: TournamentDivision[] = tournment.divisoes.map((divisao) => ({
+        id: divisao.id,
+        name: divisao.name,
+        genre: divisao.genre,
+        isAbsolute: divisao.isAbsolute
+    }))
     
     
     
@@ -152,6 +138,8 @@ export default async function layoutTorneio({children, params}: {children: React
                                 id={Number(tournment.id)}
                                 pixKey={tournment.chave_pix}
                                 qrCodeUrl={folderQr}
+                                categories={categories}
+                                divisions={divisions}
                             >
                                 {children}
                             </TournamentProvider>

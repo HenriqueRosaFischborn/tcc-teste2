@@ -1,7 +1,6 @@
 'use client'
 
-import IMask from 'imask'
-import { useEffect, useRef } from 'react'
+import InputDate from '@/components/ui/input-date'
 import type { Category, CategoryStatus, Genre } from './types'
 import { formatCurrency, handleEnterBlur } from './utils'
 
@@ -20,64 +19,6 @@ type PlayerFieldsProps = {
   showCategory: boolean
   divisionChoice: 'default' | 'absolute'
   onDivisionChange: (choice: 'default' | 'absolute') => void
-}
-
-/** Campo de data de nascimento com máscara dd/mm/aaaa (id e classes usados pelo CSS da página). */
-function BirthDateInput({
-  onValueChange,
-  onBlur,
-}: {
-  onValueChange: (value: string) => void
-  onBlur: () => void
-}) {
-  const inputRef = useRef<HTMLInputElement | null>(null)
-  const currentYear = new Date().getFullYear()
-
-  useEffect(() => {
-    if (!inputRef.current) return
-
-    const mask = IMask(inputRef.current, {
-      mask: Date,
-      pattern: 'd{/}m{/}Y',
-      lazy: true,
-      blocks: {
-        d: { mask: IMask.MaskedRange, from: 1, to: 31, maxLength: 2 },
-        m: { mask: IMask.MaskedRange, from: 1, to: 12, maxLength: 2 },
-        Y: { mask: IMask.MaskedRange, from: currentYear - 100, to: currentYear },
-      },
-      format: (date: Date | null) => {
-        if (!date) return ''
-
-        const day = date.getDate().toString().padStart(2, '0')
-        const month = (date.getMonth() + 1).toString().padStart(2, '0')
-
-        return `${day}/${month}/${date.getFullYear()}`
-      },
-      parse: (value: string) => {
-        const [day, month, year] = value.split('/').map(Number)
-
-        return new Date(year, month - 1, day)
-      },
-      autofix: true,
-    })
-
-    return () => mask.destroy()
-  }, [currentYear])
-
-  return (
-    <input
-      ref={inputRef}
-      id="input-date"
-      className="needed"
-      name="borndate"
-      onKeyDown={handleEnterBlur}
-      onInput={(event) => onValueChange(event.currentTarget.value)}
-      onBlur={(event) => {
-        onValueChange(event.currentTarget.value)
-        onBlur()
-      }}
-    />
-  )
 }
 
 export default function PlayerFields({
@@ -122,7 +63,7 @@ export default function PlayerFields({
 
       <div style={{ width: '35%' }}>
         <label htmlFor="borndate">Data de nascimento: <p className="ast">*</p></label>
-        <BirthDateInput onValueChange={onBirthDateChange} onBlur={onFieldBlur} />
+        <InputDate onValueChange={onBirthDateChange} blur={onFieldBlur} />
       </div>
 
       <div className="genre" style={{ flexDirection: 'column', alignItems: 'start' }}>
@@ -159,12 +100,6 @@ export default function PlayerFields({
         ''
       )}
 
-      {categoryStatus === 'failed' ? (
-        <p className="error">*Não foi possível carregar sua categoria. Tente novamente.</p>
-      ) : (
-        ''
-      )}
-
       {showCategory ? (
         <div className="div-categorie" style={{ width: '100%', flexDirection: 'row' }}>
           <div style={{ width: 'calc(50% - 15px)', alignItems: 'start' }}>
@@ -175,7 +110,7 @@ export default function PlayerFields({
               <h3 style={{ textAlign: 'start' }}>
                 {category
                   ? `${category.name} - ${genreLabel} - ${formatCurrency(category.price)}`
-                  : 'Carregando...'}
+                  : ''}
               </h3>
             </div>
 

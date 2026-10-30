@@ -194,7 +194,32 @@ p {
   background-color: var(--ligthgray);
   color: var(--mainblack);
   border: solid 2px var(--mainblack);
-  
+
+}
+
+/* Hover dos botões: cada cor fica um pouco mais escura (o preto fica mais claro). */
+.button {
+  transition: background-color .15s ease, border-color .15s ease;
+}
+
+.button.red:hover {
+  background-color: #d61414;
+}
+
+.button.yellow:hover {
+  background-color: #e67500;
+}
+
+.button.blue:hover {
+  background-color: #03608b;
+}
+
+.button.black:hover {
+  background-color: #303030;
+}
+
+.button.gray:hover {
+  background-color: #d9d9d9;
 }
 
 .link {
@@ -262,6 +287,30 @@ input[type="number"]::-webkit-outer-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
   appearance: textfield;
+}
+
+/* Select padrão do sistema: mesma borda dos campos, seta desenhada e espaço
+   à direita para o texto nunca ficar por baixo dela. */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12pt;
+  color: var(--mainblack);
+  background-color: white;
+  background-image: url('/icons/arrow-down.png');
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 24px;
+  border: solid 1px var(--darkgray);
+  border-radius: 3px;
+  padding: 7px 38px 7px 10px;
+}
+
+select:focus {
+  outline: none;
+  border-color: var(--mainblue);
 }
 /* 
 input[type="text"]:focus,

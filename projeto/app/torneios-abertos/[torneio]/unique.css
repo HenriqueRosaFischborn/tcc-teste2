@@ -115,17 +115,20 @@ summary p {
 }
 
 #warning-box {
-    color: white;
+    position: relative;
     width: 100%;
-    
-    padding: 10px 20px;
-    background-color: #ff8200;
-    border-radius: 10px;
-    border: solid 4px #e47600;
+    padding: 14px 18px 14px 18px;
+    background-color: #fff8e8;
+    border: solid 2px #e7a50b;
+    border-radius: 8px;
 }
 
-#warning-box p{
+#warning-box p {
+    margin: 0;
+    font-size: 13pt;
+    line-height: 1.45;
     font-weight: 500;
+    color: #7a5a10;
 }
 
 .select-radios div {

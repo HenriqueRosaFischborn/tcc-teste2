@@ -83,6 +83,24 @@ export type Div = {
   isAbsolute: boolean
 }
 
+/** Categoria de um torneio como o formulário de inscrição precisa dela. */
+export type TournamentCategory = {
+  uuid: string
+  name: string
+  price: number
+  minYear: number
+  maxYear: number
+  divisionId: number
+}
+
+/** Divisão de um torneio como o formulário de inscrição precisa dela. */
+export type TournamentDivision = {
+  id: number
+  name: string
+  genre: 'masculino' | 'feminino' | 'ambos'
+  isAbsolute: boolean
+}
+
 //number
 
 export type Differences = {

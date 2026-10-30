@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import { Player } from "./types";
+import { Player, TournamentCategory, TournamentDivision } from "./types";
 
 type TournamentContextType = {
   id: number;
@@ -8,6 +8,10 @@ type TournamentContextType = {
   pixKey?: string | null;
   /** URL pública do QR Code PIX do torneio. */
   qrCodeUrl?: string | null;
+  /** Categorias do torneio: permitem escolher a categoria sem consultar o servidor. */
+  categories?: TournamentCategory[];
+  /** Divisões do torneio (uma delas pode ser a absoluta). */
+  divisions?: TournamentDivision[];
 };
 
 export const TournamentContext = createContext<TournamentContextType>({

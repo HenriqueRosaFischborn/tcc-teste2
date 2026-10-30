@@ -52,32 +52,10 @@ article > .content {
 
 #times div {
     flex-direction: row;
-    position: relative;
 }
 
-#times > div::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    right: 5px;
-    width: 25px;
-    height: 25px;
-    
-
-    background-image: url('/icons/arrow.png');
-    background-size: contain;
-    background-repeat: no-repeat;
-    transform: translateY(-50%) rotate(-90deg);
-}
-
-select {
-    display: flex;
-    cursor: pointer;
-    appearance: none;
+#times select {
     flex: 1;
-    border: solid 1px var(--darkgray);
-    border-radius: 2px;
-    padding-left: 5px;
 }
 
 #local {

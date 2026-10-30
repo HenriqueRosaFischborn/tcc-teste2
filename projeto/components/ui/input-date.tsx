@@ -1,88 +1,208 @@
 'use client'
 
-import { FormState } from "@/lib/types";
-import IMask from "imask";
-import { useEffect, useRef } from "react";
+import { FormState } from "@/lib/types"
 
+const MAX_DIGITS = 8
+const YEARS_BEFORE = 100
 
-export default function InputDate({uuid, updateObjNowSelect, reguleSize, size, defaultValue, blur, state, multiple, now}: {uuid?: string, updateObjNowSelect?: Function, reguleSize?: Function, size?: number, defaultValue?: string, blur?: Function, state?: FormState, multiple?: string, now?: boolean}) {
-    const yearNow = new Date().getFullYear()
-    const inputRef = useRef<HTMLInputElement | null>(null)
-    
-    function nowBlur(input: HTMLInputElement) {
-        
-        if (now && input.value.length == 10) {
-            const [d, m, y] = input.value.split('/').map(Number)
-            
-            const dateNow = new Date(Date.now())
+const isDigit = (char: string | undefined) => char !== undefined && char >= '0' && char <= '9'
+const onlyDigits = (value: string) => value.replace(/\D/g, '')
 
-            const dateinput = new Date(y, m -1, d)
+/**
+ * Separa o texto digitado nas três partes da data (dia, mês, ano) e limita cada uma.
+ * Quando o usuário digita tudo sem barra, os dígitos são agrupados em dd/mm/aaaa.
+ * Dígito que passa do limite de uma parte vai para o começo da próxima, então
+ * apagar um número do mês mexe só no mês: o ano continua intacto.
+ */
+function splitGroups(value: string): string[] {
+    const parts = value.split('/')
 
-            if (dateinput < dateNow) {
-                input.value = dateNow.toLocaleDateString('pt-BR')
+    if (parts.length === 1) {
+        const digits = onlyDigits(value)
+
+        return [digits.slice(0, 2), digits.slice(2, 4), digits.slice(4, MAX_DIGITS)]
+    }
+
+    let [day, month = '', year = ''] = parts.map(onlyDigits)
+
+    if (day.length > 2) {
+        month = day.slice(2) + month
+        day = day.slice(0, 2)
+    }
+
+    if (month.length > 2) {
+        year = month.slice(2) + year
+        month = month.slice(0, 2)
+    }
+
+    return [day, month, year.slice(0, 4)]
+}
+
+/** Monta o texto de volta, sem as partes vazias do final. */
+function renderGroups(groups: string[]) {
+    const partes = [...groups]
+
+    while (partes.length > 1 && partes[partes.length - 1] === '') partes.pop()
+
+    return partes.join('/')
+}
+
+/** Posição do cursor depois do enésimo dígito dentro do texto formatado. */
+function caretAfterDigits(formatted: string, digitCount: number) {
+    if (digitCount <= 0) return 0
+
+    let seen = 0
+
+    for (let index = 0; index < formatted.length; index++) {
+        if (!isDigit(formatted[index])) continue
+
+        seen++
+
+        if (seen === digitCount) {
+            let caret = index + 1
+
+            while (caret < formatted.length && !isDigit(formatted[caret])) caret++
+
+            return caret
+        }
+    }
+
+    return formatted.length
+}
+
+/** Reformata o campo mantendo o cursor sobre o mesmo dígito. */
+export function normalizeDateInput(rawValue: string, caretRaw: number) {
+    const value = renderGroups(splitGroups(rawValue))
+    const digitsBeforeCaret = onlyDigits(rawValue.slice(0, caretRaw)).length
+    const caret = caretAfterDigits(value, Math.min(digitsBeforeCaret, onlyDigits(value).length))
+
+    return { value, caret }
+}
+
+/** Data completa que existe de verdade e dentro do intervalo aceito. */
+function isRealDate(value: string, allowFuture: boolean) {
+    if (value.length !== 10) return false
+
+    const [day, month, year] = value.split('/').map(Number)
+
+    if (!day || !month || !year) return false
+
+    const currentYear = new Date().getFullYear()
+
+    if (year < currentYear - YEARS_BEFORE) return false
+    if (year > (allowFuture ? 9999 : currentYear)) return false
+
+    const date = new Date(year, month - 1, day)
+
+    return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day
+}
+
+type InputDateProps = {
+    uuid?: string
+    updateObjNowSelect?: (uuid: string, collumn: string, value: string, type: string) => void
+    reguleSize?: (input: HTMLInputElement) => void
+    size?: number
+    defaultValue?: string
+    blur?: (value: string) => void
+    state?: FormState
+    multiple?: string
+    now?: boolean
+    /** Avisa o valor a cada alteração, mesmo quando a data ainda está incompleta. */
+    onValueChange?: (value: string) => void
+}
+
+export default function InputDate({uuid, updateObjNowSelect, reguleSize, size, defaultValue, blur, state, multiple, now, onValueChange}: InputDateProps) {
+    const initialValue = defaultValue ?? state?.values?.[0]?.borndate ?? ''
+
+    function applyValue(input: HTMLInputElement, rawValue: string, caretRaw: number) {
+        const { value, caret } = normalizeDateInput(rawValue, caretRaw)
+
+        if (value !== rawValue) {
+            input.value = value
+            input.setSelectionRange(caret, caret)
+        }
+
+        if (reguleSize) reguleSize(input)
+        if (onValueChange) onValueChange(value)
+    }
+
+    function handleInput(event: React.FormEvent<HTMLInputElement>) {
+        const input = event.currentTarget
+
+        applyValue(input, input.value, input.selectionStart ?? input.value.length)
+    }
+
+    function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+        if (event.key === 'Enter') {
+            event.preventDefault()
+            event.currentTarget.blur()
+            return
+        }
+
+        if (event.key !== 'Backspace') return
+
+        const input = event.currentTarget
+        const caret = input.selectionStart ?? 0
+
+        // Com o cursor logo depois de uma barra, apaga o dígito anterior em vez de não fazer nada.
+        if (input.selectionStart !== input.selectionEnd || caret < 2) return
+        if (isDigit(input.value[caret - 1]) || !isDigit(input.value[caret - 2])) return
+
+        event.preventDefault()
+
+        const { value } = normalizeDateInput(
+            input.value.slice(0, caret - 2) + input.value.slice(caret - 1),
+            caret - 1
+        )
+
+        input.value = value
+
+        // O cursor fica onde o dígito apagado estava (sem pular a barra).
+        const newCaret = Math.min(caret - 2, value.length)
+        input.setSelectionRange(newCaret, newCaret)
+
+        if (reguleSize) reguleSize(input)
+        if (onValueChange) onValueChange(value)
+    }
+
+    function handleBlur(event: React.FocusEvent<HTMLInputElement>) {
+        const input = event.currentTarget
+        let value = input.value
+
+        if (now && value.length === 10) {
+            const [day, month, year] = value.split('/').map(Number)
+            const dateNow = new Date()
+
+            if (new Date(year, month - 1, day) < dateNow) {
+                value = dateNow.toLocaleDateString('pt-BR')
             }
         }
-    }
 
-    function handleEnterBlur(e: React.KeyboardEvent<HTMLInputElement>) {
-        if (e.key === 'Enter') {
-            e.preventDefault()
-            e.currentTarget.blur()
+        // Data completa que não existe (31/02, mês 13) ou fora do intervalo: limpa o campo.
+        if (value.length === 10 && !isRealDate(value, Boolean(now))) value = ''
+
+        if (value !== input.value) input.value = value
+
+        if (onValueChange) onValueChange(value)
+        if (blur) blur(value)
+
+        if (uuid && updateObjNowSelect && value.length === 10) {
+            updateObjNowSelect(uuid, 'data_nasc', value, 'date')
         }
     }
-
-    useEffect(() => {
-        if (!inputRef.current) return
-
-        IMask(inputRef.current, {
-        mask: Date,
-        pattern: 'd{/}m{/}Y',
-        lazy: true,
-        blocks: {
-            d: {
-            mask: IMask.MaskedRange,
-            from: 1,
-            to: 31,
-            maxLength: 2,
-            },
-            m: {
-            mask: IMask.MaskedRange,
-            from: 1,
-            to: 12,
-            maxLength: 2,
-            },
-            Y: {
-            mask: IMask.MaskedRange,
-            from: yearNow - 100,
-            to: now ? 9999 : yearNow,
-            },
-        },
-        format: (date: any) => {
-            const day = date.getDate().toString().padStart(2, '0')
-            const month = (date.getMonth() + 1).toString().padStart(2, '0')
-            const year = date.getFullYear()
-            return `${day}/${month}/${year}`
-        },
-        parse: (str: any) => {
-            const [day, month, year] = str.split('/').map(Number)
-            return new Date(year, month - 1, day)
-        },
-        autofix: true,
-        })
-    }, [])
 
     return (
         <input
-        ref={inputRef}
         id={multiple && multiple == 'sim' ? '' : "input-date"}
         className={`needed ${multiple && multiple == 'sim' ? 'input-date' : ''}`}
         name="borndate"
-        onKeyDown={handleEnterBlur}
-        onBlur={blur ? (e) => {blur(e.currentTarget.value); nowBlur(e.currentTarget)} : () => {}}
-        defaultValue={defaultValue ? defaultValue : state && state.values && state.values[0] ? state.values[0].borndate : ''}
+        defaultValue={initialValue}
         size={size ? size : undefined}
-        onInput={reguleSize ? (e) => reguleSize(e.currentTarget) : undefined}
-        onChange={updateObjNowSelect && uuid ? (e) => {updateObjNowSelect(uuid, 'data_nasc', e.currentTarget.value, 'date')} : undefined}
+        inputMode="numeric"
+        autoComplete="off"
+        onInput={handleInput}
+        onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
         />
     )
 }

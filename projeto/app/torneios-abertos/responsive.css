@@ -4,7 +4,33 @@
     #tournaments {
         flex-direction: column;
     }
-    
+
+    #filters {
+        padding: 14px;
+        gap: 12px;
+    }
+
+    #filters .fields {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    #filters .field,
+    #filters .field.search-field {
+        width: 100%;
+        flex: 1 1 auto;
+    }
+
+    #filters select {
+        width: 100%;
+    }
+
+    #filters .summary {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
     .tournaments {
         width: 100%;
     }

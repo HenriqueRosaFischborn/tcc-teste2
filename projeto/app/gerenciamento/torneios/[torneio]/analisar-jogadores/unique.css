@@ -158,39 +158,8 @@ td a {
     text-decoration: underline;
 }
 
-td select:focus {
-    outline: none;
-    border: none;
-}
-
-select {
-    display: flex;
-    cursor: pointer;
-    appearance: none;
+td select {
     flex: 1;
-    padding-left: 5px;
-    padding-right: 50px;
-    padding-top: 5px;
-    padding-bottom: 5px;
-}
-
-.select {
-    position: relative;
-}
-
-.select::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    right: 5px;
-    width: 25px;
-    height: 25px;
-    
-    pointer-events: none;
-    background-image: url('/icons/arrow.png');
-    background-size: contain;
-    background-repeat: no-repeat;
-    transform: translateY(-50%) rotate(-90deg);
 }
 
 
