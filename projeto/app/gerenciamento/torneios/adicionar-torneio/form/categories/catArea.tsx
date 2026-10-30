@@ -9,7 +9,6 @@ type Categorie = {
     value: string,
     from: number,
     to: number,
-    fide: boolean,
     divisionFor: string
 }
 
@@ -47,8 +46,6 @@ export default function CategorieArea({divisionsBasic, setErrorCategories}: {div
     async function sendCategorieAutomhatic(){
     const subInput = document.querySelector('#subCategorie') as HTMLSelectElement
     const valueInput = document.querySelector('#valueCategorie') as HTMLInputElement
-    const fideInput = document.querySelector('#fideCategorie') as HTMLInputElement
-    const cbxInput = document.querySelector('#cbxCategorie') as HTMLInputElement
 
     const divisionFor = Array.from(document.querySelectorAll('.division-for')).filter(el => el instanceof HTMLInputElement && el.checked)[0].parentElement?.querySelector('label')?.innerText
 
@@ -68,7 +65,6 @@ export default function CategorieArea({divisionsBasic, setErrorCategories}: {div
     const categorie: Categorie = {
         name: isAbsolute ? 'Absoluto' : `Sub ${sub}`,
         value: valueInput.value,
-        fide: fideInput.checked,
         from: isAbsolute ? MIN_YEAR : currentYear - sub,
         to: isAbsolute ? currentYear - sub : currentYear - sub + 1,
         divisionFor: divisionFor as string
@@ -132,8 +128,6 @@ export default function CategorieArea({divisionsBasic, setErrorCategories}: {div
 
     subInput.value = ''
     valueInput.value = ''
-    fideInput.checked = false
-    cbxInput.checked = false
 
     console.log('divisions', divisions)
 
@@ -146,16 +140,13 @@ export default function CategorieArea({divisionsBasic, setErrorCategories}: {div
         const valueInput = document.querySelector('#valueCategorie') as HTMLInputElement
         const toInput = document.querySelector('#toCategorie') as HTMLInputElement
         const fromInput = document.querySelector('#fromCategorie') as HTMLInputElement
-        const fideInput = document.querySelector('#fideCategorie') as HTMLInputElement
-        const cbxInput = document.querySelector('#cbxCategorie') as HTMLInputElement
         
         const divisionFor = Array.from(document.querySelectorAll('.division-for')).filter(el  => el instanceof HTMLInputElement && el.checked)[0].parentElement?.querySelector('label')?.innerText
 
         const categorie: Categorie = {
             name: nameInput.value,
             value: valueInput.value,
-            fide: fideInput.checked,
-            to: Number(toInput.value),
+                to: Number(toInput.value),
             from: Number(fromInput.value),
             divisionFor: divisionFor as string
         }
@@ -211,8 +202,6 @@ export default function CategorieArea({divisionsBasic, setErrorCategories}: {div
                             valueInput.value = ''
                             toInput.value = ''
                             fromInput.value = ''
-                            fideInput.checked = false
-                            cbxInput.checked = false
                            
                             console.log('divisions', divisions)
                         }
@@ -338,14 +327,6 @@ export default function CategorieArea({divisionsBasic, setErrorCategories}: {div
                         )}
 
                     <div id='checkboxes' style={{width: '100%'}}>
-                        <div>
-                            <div>
-                                <input id="fideCategorie" type="checkbox" />
-                                <label  htmlFor="fide">Vale FIDE</label>
-                            </div>
-                           
-                        
-                        </div>
                         <div id="radios-divisions">
                             {divisionsBasic.map((el, i) => {
                                 return (

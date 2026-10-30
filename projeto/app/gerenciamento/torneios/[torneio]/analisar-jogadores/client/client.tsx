@@ -33,11 +33,13 @@ async function routeGenerateTXT(players: Inscricoes) {
     URL.revokeObjectURL(url);
 }
 
-export default function BodyClient({nameTournment, players, comprovantes, categories, divisions}: {nameTournment: string, categories: Cat[], divisions: Div[], players: Player[], comprovantes: {[key: string]: string}}) {
+export default function BodyClient({nameTournment, players, comprovantes, categories, divisions}: {nameTournment: string, categories: Cat[], divisions: Div[], players: Player[], comprovantes: {[key: string]: string | null}}) {
     const initialValue: {message: string} = {message: ''}
     const [state, formAction] = useActionState(updateDataBase, initialValue)
     const [defaultInscri, setDefaultInscri] = useState<Inscricoes>({})
     const [nowInscri, setNowInscri] = useState<Inscricoes>({})
+    // Uuids com data de nascimento incompleta (o botão salvar só libera com todas completas)
+    const [invalidDates, setInvalidDates] = useState<string[]>([])
     
     useEffect(() => {
         const dataInscri: Inscricoes = {}
@@ -48,6 +50,28 @@ export default function BodyClient({nameTournment, players, comprovantes, catego
         setNowInscri(dataInscri)
     }, [])
     
+    function handleDateValue(uuid: string, value: string) {
+        setInvalidDates(prev => {
+            const outros = prev.filter(item => item !== uuid)
+            return value.length === 10 ? outros : [...outros, uuid]
+        })
+    }
+
+    // Aviso mostrado na própria página quando o jogador não anexou comprovante
+    const [avisoComprovante, setAvisoComprovante] = useState('')
+
+    function verComprovante(uuid: string, nome: string) {
+        const url = comprovantes[uuid]
+
+        if (!url) {
+            setAvisoComprovante(`Nenhum comprovante anexado por ${nome}.`)
+            return
+        }
+
+        setAvisoComprovante('')
+        window.open(url, '_blank', 'noopener,noreferrer')
+    }
+
     function updateObjNowSelect(uuid: string, collumn: string, value: string, type: string) {
 
         let dateValue: Date
@@ -120,6 +144,10 @@ export default function BodyClient({nameTournment, players, comprovantes, catego
                             <img src="/icons/search.png" alt="search" fetchPriority='low' loading='lazy' decoding='async'/>
                         </div>
                     </div> */}
+                    {avisoComprovante !== '' ? (
+                        <p className='error' style={{width: '100%'}}>{avisoComprovante}</p>
+                    ) : ('')}
+                    {players.length > 0 ? (<>
                     <div id='table'>
                         <table>
                             <thead>
@@ -175,7 +203,7 @@ export default function BodyClient({nameTournment, players, comprovantes, catego
                                             <input type="text" defaultValue={el.name} size={el.name.length} onInput={(e) => reguleSize(e.currentTarget)} onChange={(e) => updateObjNowSelect(el.uuid, 'name', e.currentTarget.value, 'string')}/>
                                         </td>  
                                         <td className='comprovante' style={{paddingLeft: '5px'}}>
-                                            <a href={comprovantes[el.uuid]} target='_blank'>Ver comprovante</a>
+                                            <button type='button' className='comprovante-link' onClick={() => verComprovante(el.uuid, el.name)}>Ver comprovante</button>
                                         </td>
 
                                         <td style={{backgroundColor: nowInscri[el.uuid].id_fide !== defaultInscri[el.uuid]?.id_fide ? 'var(--ligthgray)' : ''}}>
@@ -207,7 +235,7 @@ export default function BodyClient({nameTournment, players, comprovantes, catego
                                         </td> 
                                         
                                         <td className='date' style={{backgroundColor: nowInscri[el.uuid].data_nasc !== defaultInscri[el.uuid]?.data_nasc ? 'var(--ligthgray)' : ''}}>
-                                            <InputDate uuid={el.uuid} updateObjNowSelect={updateObjNowSelect} reguleSize={reguleSize} size={el.data_nasc.toLocaleDateString('pt-BR', {timeZone: 'UTC'}).length} defaultValue={el.data_nasc.toLocaleDateString('pt-BR', {timeZone: 'UTC'})}/>
+                                            <InputDate uuid={el.uuid} updateObjNowSelect={updateObjNowSelect} reguleSize={reguleSize} size={el.data_nasc.toLocaleDateString('pt-BR', {timeZone: 'UTC'}).length} defaultValue={el.data_nasc.toLocaleDateString('pt-BR', {timeZone: 'UTC'})} onValueChange={(value) => handleDateValue(el.uuid, value)}/>
                                         </td>
                                         
                                         <td className='select' style={{backgroundColor: nowInscri[el.uuid]?.genre !== defaultInscri[el.uuid]?.genre ? 'var(--ligthgray)' : ''}}>
@@ -248,9 +276,12 @@ export default function BodyClient({nameTournment, players, comprovantes, catego
                         <input type="text" hidden name='nameTournment' value={nameTournment}/>
                         <input type="text" hidden name='defaultInscri' value={JSON.stringify(defaultInscri)}/>
                         <input type="text" hidden name='nowInscri' value={JSON.stringify(nowInscri)}/>
-                        <button id='save-changes' type='submit' className={`button red ${(JSON.stringify(defaultInscri) != JSON.stringify(nowInscri)) && Array.from(document.querySelectorAll('.date')).map(el => el.firstChild).every(el => el instanceof HTMLInputElement && el.value.length == 10) ? '' : 'disableDiv'}`}>Salvar Alterações</button>
+                        <button id='save-changes' type='submit' className={`button red ${(JSON.stringify(defaultInscri) != JSON.stringify(nowInscri)) && invalidDates.length === 0 ? '' : 'disableDiv'}`}>Salvar Alterações</button>
                     </Form>
-                    {Array.from(document.querySelectorAll('.date')).map(el => el.firstChild).every(el => el instanceof HTMLInputElement && el.value.length == 10) ? '' : <p style={{marginTop: '-15px'}} className='error'>*Preencha as datas corretamente</p>}
+                    {invalidDates.length === 0 ? '' : <p style={{marginTop: '-15px'}} className='error'>*Preencha as datas corretamente</p>}
+                    </>) : (
+                        <p className='obs'>Nenhum jogador inscrito neste torneio até o momento.</p>
+                    )}
                 </div>
         </>
     )

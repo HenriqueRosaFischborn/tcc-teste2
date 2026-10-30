@@ -1,53 +1,65 @@
-
-
 @media (max-width: 768px) {
+    article {
+        padding: 30px 10px 40px 10px;
+    }
+
     #tournaments {
-        flex-direction: column;
         width: 100%;
-    }
-    
-    .tournaments {
-        width: 100%;
+        gap: 20px;
     }
 
-    .tournament {
-        flex-direction: column;
-        align-items: start;
-        padding: 15px;
+    .inscri-section-head h2 {
+        font-size: 13pt;
+    }
+
+    /* Um cartão por linha no celular */
+    .inscri-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .inscri-card {
+        padding: 12px 14px;
         gap: 10px;
     }
 
-    .tournament .content {
-        flex-direction: row;
+    .inscri-thumb {
+        width: 44px;
+        height: 44px;
     }
 
-    .tournament .informations {
-        flex-direction: column;
-        gap: 10px;
+    .inscri-card-title h3 {
+        font-size: 11pt;
     }
 
-    .tournament img{
-        width: 110px;
+    .inscri-badge {
+        font-size: 9pt;
     }
 
-    .tournament h3 {
-        font-size: 12pt;
+    .inscri-card-info {
+        gap: 8px 12px;
     }
 
-    .tournament p{
-        font-size: 8pt;
-        line-height: 12px
+    .inscri-field dt {
+        font-size: 8.5pt;
     }
 
-    .tournament span {
+    .inscri-field dd {
         font-size: 10pt;
-        margin-top: 0px;
+    }
+
+    .inscri-note {
+        font-size: 9pt;
     }
 
     .pbuttons {
-        gap: 10px;
-        width: 100%;
         flex-direction: column;
+    }
+
+    .inscri-card .button {
+        flex: 1 1 auto;
         width: 100%;
+        font-size: 10pt;
+        padding: 8px 10px;
     }
 }

@@ -1,3 +1,28 @@
+/* Telas médias: menos margem lateral para o conteúdo caber sem empurrar as tabelas */
+@media (max-width: 1280px) {
+    #content > div:not(#gray-area),
+    #divisions,
+    #emails,
+    #discount,
+    .buttons,
+    #gray-area {
+        padding-left: 50px;
+        padding-right: 50px;
+    }
+}
+
+@media (max-width: 1000px) {
+    #content > div:not(#gray-area),
+    #divisions,
+    #emails,
+    #discount,
+    .buttons,
+    #gray-area {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+}
+
 @media(max-width: 768px) {
     #checkboxes {
         flex-direction: column;
@@ -8,9 +33,14 @@
         gap: 10px;
     }
 
-    .td-width {
-        width: 200px;
+    /* Em telas pequenas, formulário e tabela ficam um embaixo do outro, cada um com a largura toda */
+    #divisions > .form,
+    #emails > .form,
+    #gray-area > .form,
+    #divisions > table,
+    #emails > table,
+    #gray-area > #body-tables {
+        flex: 1 1 100%;
+        width: 100%;
     }
-
-    
 }

@@ -99,10 +99,10 @@ export default function TournamentsList({ tournaments }: { tournaments: Tourname
         </div>
 
         <div className="summary">
-          <span>
+          {/* <span>
             {filtered.length} de {tournaments.length}{' '}
             {tournaments.length === 1 ? 'torneio' : 'torneios'}
-          </span>
+          </span> */}
           {hasFilters ? (
             <button type="button" onClick={clearFilters}>
               Limpar filtros

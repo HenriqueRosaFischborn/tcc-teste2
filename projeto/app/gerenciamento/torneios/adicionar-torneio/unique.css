@@ -207,7 +207,9 @@ td {
 }
 
 .td-width {
-    width: 500px;
+    width: 100%;
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
 
 #times div {
@@ -287,3 +289,42 @@ div .division {
 }
 
 /* select */
+
+/* ===== Seções "formulário + tabela" ===== */
+/* O formulário e a tabela dividem a linha e encolhem juntos: a tabela só vai
+   para baixo quando a tela é realmente pequena (ver responsive.css). */
+#divisions > .form,
+#emails > .form {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+#divisions > table,
+#emails > table {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+/* Categorias: o formulário é curto, então fica com largura própria e a lista de
+   divisões ocupa o resto da linha (sem o vazio no meio). */
+#gray-area > .form {
+    flex: 0 1 400px;
+    min-width: 0;
+}
+
+#gray-area > #body-tables {
+    flex: 1 1 320px;
+    min-width: 0;
+}
+
+#divisions table,
+#emails table,
+#body-tables table {
+    width: 100%;
+    table-layout: fixed;
+}
+
+#emails table td,
+#divisions table td {
+    overflow: hidden;
+}

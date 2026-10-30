@@ -5,7 +5,6 @@ type Categorie = {
     value: string,
     from: number,
     to: number,
-    fide: boolean,
     divisionFor: string
 }
 

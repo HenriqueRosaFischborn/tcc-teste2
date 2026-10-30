@@ -8,7 +8,8 @@ article {
     margin-bottom: 50px;
     flex-wrap: wrap;
     width: 90%;
-    gap: 20px;
+    max-width: 1180px;
+    gap: 26px;
 }
 
 #tournaments h1 {
@@ -16,56 +17,231 @@ article {
     text-align: center;
 }
 
-.tournament {
+.link-button {
+    padding: 0;
+    border: none;
+    background: none;
+    font-family: inherit;
+    font-size: 11.5pt;
+    font-weight: 500;
+    color: var(--mainblue);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+}
+
+.link-button:hover {
+    color: #024b6e;
+}
+
+/* ---------- Seções por status ---------- */
+
+.inscri-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
     width: 100%;
-    justify-content: space-between;
-    gap: 50px;
-    align-items: stretch;
-    border: solid 1px lightgray;
-    border-radius: 5px;
-    padding: 15px 30px;
-    
 }
 
-.tournament h3{
+.inscri-section-head {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    border-bottom: solid 2px var(--ligthgray);
+    padding-bottom: 8px;
+}
+
+.inscri-section-head h2 {
     text-align: start;
+    font-size: 17pt;
+    font-weight: 500;
 }
 
-
-.tournament p{
-    font-size: 13pt;
-    font-weight: 400;
+.inscri-count {
+    font-size: 11pt;
+    font-weight: 600;
+    color: #6f6f6f;
+    background-color: var(--ligthgray);
+    border-radius: 999px;
+    padding: 1px 10px;
 }
 
-.tournament img{
-    width: 160px;
-    height: auto;
+.inscri-section-head .link-button {
+    margin-left: auto;
+}
+
+/* ---------- Grade de cartões: duas inscrições por linha ---------- */
+
+.inscri-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    width: 100%;
+    align-items: stretch;
+}
+
+.inscri-card {
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px 18px;
+    background-color: white;
+    border: solid 1px var(--ligthgray);
+    border-left: solid 4px var(--darkgray);
+    border-radius: 5px;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.inscri-card:hover {
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .08);
+}
+
+.inscri-card.status-confirmada {
+    border: solid 1px #13803c;
+}
+
+.inscri-card.status-pendente {
+    
+    border: solid 1px #838383;
+}
+
+.inscri-card.status-recusada {
+    
+    border: solid 1px var(--mainred);
+}
+
+.inscri-card.is-past {
+    background-color: #fcfcfc;
+}
+
+.inscri-card-head {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.inscri-thumb {
+    width: 56px;
+    height: 56px;
     flex-shrink: 0;
     object-fit: contain;
+    border-radius: 6px;
+    background-color: #f4f4f4;
 }
 
-.tournament .content {
+.inscri-card-title {
     flex-direction: column;
-    justify-content: space-between;
-    row-gap: 10px;
+    align-items: flex-start;
+    gap: 6px;
     flex: 1;
 }
 
-.tournament .informations {
-    gap: 50px;
-}
-
-
-span.r {
-    color: var(--mainred);
+.inscri-card-title h3 {
+    font-size: 14pt;
     font-weight: 600;
-    margin-top: 10px;
+    line-height: 1.25;
+    text-align: start;
 }
 
-.pbuttons {
-    gap: 10px;
-    flex-direction: row;
+.inscri-badge {
+    font-size: 10pt;
+    font-weight: 600;
+    padding: 2px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.inscri-badge.status-confirmada {
+    color: #0f6330;
+    background-color: #e3f6ea;
+}
+
+.inscri-badge.status-pendente {
+    color: #5c5c5c;
+    background-color: #ededed;
+}
+
+.inscri-badge.status-recusada {
+    color: #b71111;
+    background-color: #fde8e8;
+}
+
+/* ---------- Dados da inscrição ---------- */
+
+.inscri-card-info {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 18px;
+    margin: 0;
     width: 100%;
 }
 
-/*margin*/
+.inscri-field {
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
+
+.inscri-field.wide {
+    grid-column: 1 / -1;
+}
+
+.inscri-field dt {
+    font-size: 10pt;
+    font-weight: 500;
+    color: #6f6f6f;
+}
+
+.inscri-field dd {
+    margin: 0;
+    font-size: 12pt;
+    font-weight: 400;
+    color: var(--mainblack);
+    overflow-wrap: anywhere;
+}
+
+/* ---------- Rodapé do cartão ---------- */
+
+.inscri-card-foot {
+    flex-direction: column;
+    gap: 10px;
+    margin-top: auto;
+    padding-top: 10px;
+    border-top: dashed 1px var(--ligthgray);
+}
+
+.inscri-note {
+    font-size: 10.5pt;
+    font-weight: 500;
+    color: var(--mainred);
+}
+
+.inscri-note.error {
+    color: var(--mainred);
+}
+
+.inscri-note.muted {
+    color: #8a8a8a;
+    font-weight: 400;
+}
+
+.pbuttons {
+    gap: 8px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.inscri-card .button {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex: 1 1 150px;
+    width: auto;
+    min-width: 0;
+    padding: 8px 12px;
+    font-size: 12pt;
+    font-weight: 500;
+    line-height: 1.25;
+    text-align: start;
+}

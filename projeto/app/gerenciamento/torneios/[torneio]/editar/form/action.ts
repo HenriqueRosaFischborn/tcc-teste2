@@ -9,7 +9,6 @@ type Categorie = {
     value: string,
     from: number,
     to: number,
-    fide: boolean,
     divisionFor: string
 }
 
@@ -190,7 +189,6 @@ export default async function addTournmentForm(prev: NewTournment, formdata: For
                         .replace(',', '.')
                         .trim()
                 ),
-                vale_fide: category.fide as boolean,
                 min_y: category.from as number,
                 max_y: category.to as number,
                 default_division: createdDiv!.id

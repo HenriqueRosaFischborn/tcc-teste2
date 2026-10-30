@@ -215,7 +215,7 @@ p {
 }
 
 .button.black:hover {
-  background-color: #303030;
+  background-color: #1a1a1a;
 }
 
 .button.gray:hover {
@@ -293,11 +293,11 @@ input[type="number"] {
    à direita para o texto nunca ficar por baixo dela. */
 select {
   appearance: none;
+  box-sizing: border-box;
   -webkit-appearance: none;
   cursor: pointer;
   font-family: inherit;
   font-size: 12pt;
-  color: var(--mainblack);
   background-color: white;
   background-image: url('/icons/arrow-down.png');
   background-repeat: no-repeat;

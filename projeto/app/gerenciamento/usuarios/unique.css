@@ -115,6 +115,17 @@ th {
     object-fit: contain;
 }
 
+/* Select dentro da tabela: a borda é a da própria célula, então o campo não desenha a sua. */
+/* Select dentro da tabela: a borda é a da própria célula e o campo não corta o texto. */
 td select {
     flex: 1;
+    width: auto;
+    min-width: 100%;
+    box-sizing: border-box;
+    border: none;
+    background-color: transparent;
+    background-position: right 4px center;
+    background-size: 20px;
+    padding: 4px 26px 4px 4px;
+    font-size: 15pt;
 }

@@ -10,7 +10,6 @@ type Categorie = {
     value: string,
     from: number,
     to: number,
-    fide: boolean,
     divisionFor: string
 }
 
@@ -51,8 +50,6 @@ export default function CategorieArea({defaultDivisions, divisionsBasic, setErro
         const valueInput = document.querySelector('#valueCategorie') as HTMLInputElement
         const toInput = document.querySelector('#toCategorie') as HTMLInputElement
         const fromInput = document.querySelector('#fromCategorie') as HTMLInputElement
-        const fideInput = document.querySelector('#fideCategorie') as HTMLInputElement
-        const cbxInput = document.querySelector('#cbxCategorie') as HTMLInputElement
         
 
         
@@ -61,7 +58,6 @@ export default function CategorieArea({defaultDivisions, divisionsBasic, setErro
         const categorie: Categorie = {
             name: nameInput.value,
             value: valueInput.value,
-            fide: fideInput.checked,
             to: Number(toInput.value),
             from: Number(fromInput.value),
             divisionFor: divisionFor as string
@@ -225,14 +221,6 @@ export default function CategorieArea({defaultDivisions, divisionsBasic, setErro
                     </div>
 
                     <div id='checkboxes' style={{width: '100%'}}>
-                        <div>
-                            <div>
-                                <input id="fideCategorie" type="checkbox" />
-                                <label  htmlFor="fide">Vale FIDE</label>
-                            </div>
-                           
-                        {/* hidden */}
-                        </div>
                         <div id="radios-divisions">
                             {divisionsBasic.map((el, i) => {
                                 return (

@@ -83,13 +83,30 @@ export default async function Players({params}: {params: Promise<{ torneio: stri
 
     const inscricoes = await getplayers(Number(tournment.id)) as Player[]
 
-    const comprovantes: { [key: string]: string } = {}
-    inscricoes.map((el)=> {
-        const pathComprovante = `comprovantes/${tournment.id}/${el.usuario.id}/${el.uuid}`
-        const dataComprovante = supabaseAdmin.storage.from('publics').getPublicUrl(pathComprovante).data
-        const comprovante = dataComprovante.publicUrl
-        comprovantes[el.uuid] = comprovante
-    })
+    // Só entra no mapa o comprovante que existe de verdade no storage: quem não
+    // enviou arquivo fica com null e a tela avisa em vez de abrir uma página de erro.
+    const torneioId = Number(tournment.id)
+    const comprovantes: { [key: string]: string | null } = {}
+    const arquivosPorUsuario = new Map<number, string[]>()
+
+    async function comprovantesDoUsuario(userId: number) {
+        if (!arquivosPorUsuario.has(userId)) {
+            const { data } = await supabaseAdmin.storage.from('publics').list(`comprovantes/${torneioId}/${userId}`)
+
+            arquivosPorUsuario.set(userId, (data ?? []).map((arquivo) => arquivo.name))
+        }
+
+        return arquivosPorUsuario.get(userId) ?? []
+    }
+
+    for (const el of inscricoes) {
+        const arquivos = await comprovantesDoUsuario(el.usuario.id)
+        const pathComprovante = `comprovantes/${torneioId}/${el.usuario.id}/${el.uuid}`
+
+        comprovantes[el.uuid] = arquivos.includes(el.uuid)
+            ? supabaseAdmin.storage.from('publics').getPublicUrl(pathComprovante).data.publicUrl
+            : null
+    }
 
     const categories = await getCategories(Number(tournment.id)) as Cat[]
     const diviisons = await getDivisons(Number(tournment.id)) as Div[]

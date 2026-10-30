@@ -151,15 +151,33 @@ td{
     padding: 0px 5px;
 }
 
-td a {
+td a,
+td button.comprovante-link {
     color: rgb(58, 58, 58);
     font-size: 12pt;
     font-style: italic;
     text-decoration: underline;
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: inherit;
+    cursor: pointer;
+    white-space: nowrap;
 }
 
-td select {
+/* Select dentro da tabela: a borda é a da própria célula, então o campo não desenha a sua. */
+/* Select dentro da tabela: a borda é a da própria célula e o campo não corta o texto. */
+#players td select {
     flex: 1;
+    width: auto;
+    min-width: 100%;
+    box-sizing: border-box;
+    border: none;
+    background-color: transparent;
+    background-position: right 4px center;
+    background-size: 20px;
+    padding: 4px 26px 4px 4px;
+    font-size: 15pt;
 }
 
 
