@@ -212,7 +212,7 @@ export function SelectCategorie({inscricao, hasFide, errorInfo, setindividualPri
             {hasFide && errorInfo != '' ? <p className="error">{errorInfo}</p> : ''}
             
             {errorCat == 'true' ? (
-                <p className="error">Nenhuma categoria deste torneio abraange sua idade</p>
+                <p className="error">Nenhuma categoria deste torneio abrange sua idade</p>
             ) : ('')}
 
             {fieldsCat.indexOf('genre') !== -1 && fieldsCat.indexOf('date') !== -1 && !(errorCat == 'true') && ((hasFide && !errorInfo) || !hasFide) ? (

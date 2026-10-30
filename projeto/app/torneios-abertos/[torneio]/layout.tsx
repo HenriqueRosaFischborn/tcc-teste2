@@ -107,9 +107,6 @@ export default async function layoutTorneio({children, params}: {children: React
             <div id='bars-content' style={{width: '100%', height: '100%', justifyContent: 'center'}}>
                 <div id='form-content'>
                     <h1 style={{width: '100%', textAlign: 'start'}} id='torneio-title'>{torneio.split('~').join(' ')}</h1>
-                    <h1 id='qr-key' hidden>{tournment.chave_pix}</h1>
-                    <h1 id='qr-src' hidden>{folderQr}</h1>
-                    <h1 id='id' hidden>{tournment.id}</h1>
                     
                     <div id='informations'>
                         <div id='l1'>
@@ -151,7 +148,11 @@ export default async function layoutTorneio({children, params}: {children: React
                             <h2>Realizar nova inscrição:</h2>
                             <p className="error">Preencha todos os campos obrigatórios (*)</p>
                 
-                            <TournamentProvider id={Number(tournment.id)}>
+                            <TournamentProvider
+                                id={Number(tournment.id)}
+                                pixKey={tournment.chave_pix}
+                                qrCodeUrl={folderQr}
+                            >
                                 {children}
                             </TournamentProvider>
                         </div>

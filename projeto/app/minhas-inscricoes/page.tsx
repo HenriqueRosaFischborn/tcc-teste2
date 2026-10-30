@@ -172,7 +172,7 @@ export default async function MyInscriptions() {
                             
                             {el.status == 'Recusada' ? (
                                 <>
-                                    <span className='r'>Esta ionscrição foi cancelada, caso tenha ocorrido algum erro contate o árbitro</span>
+                                    <span className='r'>Esta inscrição foi cancelada. Caso tenha ocorrido algum erro, contate o árbitro.</span>
                                 </>
                             ) : (
                                 <>
@@ -227,7 +227,7 @@ export default async function MyInscriptions() {
                             </div>
                             {el.status == 'Recusada' ? (
                                 <>
-                                    <span className='r'>Esta ionscrição foi cancelada, caso tenha ocorrido algum erro contate o árbitro</span>
+                                    <span className='r'>Esta inscrição foi cancelada. Caso tenha ocorrido algum erro, contate o árbitro.</span>
                                 </>
                             ) : (
                                 <>
@@ -251,7 +251,7 @@ export default async function MyInscriptions() {
                     <p className="obs">Não há inscrições recentes cadastradas no momento</p>
                 </>)}
 
-                <h1>Minhas Inscrições de Torneios Anteriosres</h1>
+                <h1>Minhas Inscrições de Torneios Anteriores</h1>
                 {inscri.filter(el => !(el.torneio.date_inscri > dateNow && el.torneio.inscri_closed_by_arbiter === false)).length > 0 ? inscri.filter(el => !(el.torneio.date_inscri > dateNow && el.torneio.inscri_closed_by_arbiter === false)).map((el, i) => {
                     
                     const dateInscri = el.torneio.date_inscri.toLocaleDateString('pt-BR')

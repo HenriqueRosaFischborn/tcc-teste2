@@ -413,7 +413,7 @@ export default function AddTournmentForm({times, tournment, defaultDivisions, de
                                 <tr>
                                     <td>
                                         <div className='td-width'>
-                                            <p>Não há divisões cadastrados</p>
+                                            <p>Não há divisões cadastradas</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -537,11 +537,11 @@ export default function AddTournmentForm({times, tournment, defaultDivisions, de
                 <div className='buttons'>
                     <div id='qr-area' className='upload-file'>
                         
-                        <button onClick={() => document.getElementById('input-qr')?.click()} type='button' className='button red'>Atualizar Qr Code <span style={{fontSize: '10pt'}}>(.jpg / .jpeg / .png)</span></button>
+                        <button onClick={() => document.getElementById('input-qr')?.click()} type='button' className='button red'>Atualizar QR Code <span style={{fontSize: '10pt'}}>(.jpg / .jpeg / .png)</span></button>
                         <input onChange={(e) => uploadFile(e.currentTarget.value, true)} type='file' id='input-qr' name='fileQr' accept='.jpg,.jpeg,.png' hidden={true}/>     
                     
                         <div style={{flex: 1}}>
-                            <h3>Chave pix:</h3>
+                            <h3>Chave Pix:</h3>
                             <input type="text" name='chave-pix' defaultValue={tournment.chave_pix ? tournment.chave_pix : undefined}/>
                         </div>
                         <div style={{width: '100%'}}>
