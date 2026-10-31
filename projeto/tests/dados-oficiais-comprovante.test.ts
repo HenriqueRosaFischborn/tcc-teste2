@@ -59,6 +59,10 @@ vi.mock('@/lib/supabase', () => ({
 vi.mock('@/app/api/email/new-inscription/send', () => ({ sendNewInscription: sendNewMock }))
 vi.mock('@/app/api/email/inscription-solicited/send', () => ({ sendRequestedMessageEmail: sendRequestedMock }))
 
+// `after` do Next roda a tarefa depois da resposta e só existe dentro de uma
+// requisição: nos testes ela roda na hora.
+vi.mock('next/server', () => ({ after: (tarefa: () => unknown) => tarefa() }))
+
 import { submitInscription } from '@/app/torneios-abertos/[torneio]/form/submit-inscription'
 
 const TORNEIO = BigInt(9)

@@ -1,5 +1,6 @@
 'use server'
 
+import { after } from 'next/server'
 import { sendNewInscription } from '@/app/api/email/new-inscription/send'
 import { sendRequestedMessageEmail } from '@/app/api/email/inscription-solicited/send'
 import { auth } from '@/auth'
@@ -56,8 +57,12 @@ async function buscarJogadorOficial(
  * Aqui o dado oficial só enriquece o cadastro (nome, rating, federação) e o
  * árbitro completa o que faltar, então vale desistir cedo em vez de segurar o
  * jogador na tela de envio esperando um site oficial que não vai responder.
+ *
+ * Sem o `FIDE_PROXY` a FIDE não responde de IP de nuvem: o prazo é o tempo
+ * inteiro que o jogador fica olhando "Enviando inscrição...". Com proxy ela
+ * responde em um ou dois segundos, então 3 s não custa dado nenhum.
  */
-const PRAZO_CONSULTA_NO_ENVIO_MS = 5000
+const PRAZO_CONSULTA_NO_ENVIO_MS = 3000
 
 async function uploadReceipt(file: File, tournamentId: bigint, userId: number, inscriptionUuid: string): Promise<boolean> {
   const path = `comprovantes/${tournamentId}/${userId}/${inscriptionUuid}`
@@ -133,26 +138,37 @@ export async function submitInscription(
   // Duplicidade é por identidade do JOGADOR (ID FIDE ou CBX), não por conta —
   // uma conta pode inscrever vários jogadores no mesmo torneio. Sem nenhum dos
   // dois IDs, não há checagem: comparar por nome barraria homônimos.
-  const duplicada = await buscarInscricaoDuplicada({
-    idTorneio: category.id_torneio,
-    identidade: { idFide: fideId, idCbx: cbxId }
-  })
+  // Essa checagem e a sessão não dependem uma da outra: correm juntas.
+  const [duplicada, session] = await Promise.all([
+    buscarInscricaoDuplicada({
+      idTorneio: category.id_torneio,
+      identidade: { idFide: fideId, idCbx: cbxId }
+    }),
+    auth(),
+  ])
 
   if (duplicada) return { status: 'duplicate' }
 
-  const session = await auth()
   const email = session?.user?.email
 
   if (!email) {
     return { status: 'error', message: 'Sua sessão expirou. Entre novamente para concluir a inscrição.' }
   }
 
-  const user = await db.usuario.findUnique({ where: { email } })
-
-  if (!user) return { status: 'error', message: GENERIC_ERROR }
-
-  // Divisão escolhida: a absoluta tem prioridade, se o jogador a marcou.
-  const [divisions, categorias] = await Promise.all([
+  // T16: os dados oficiais NÃO vêm do JSON que o navegador envia
+  // (`playerFide`/`playerCbx`). Nome, federação, título e ratings são buscados
+  // aqui, direto na FIDE e na CBX, a partir dos IDs informados.
+  //
+  // Se o site oficial estiver fora do ar, a inscrição NÃO é bloqueada: o nome
+  // digitado é usado e os dados oficiais ficam vazios — o árbitro pode
+  // completá-los depois na tela de análise.
+  //
+  // As consultas externas são o que domina a espera no envio (a FIDE chega a
+  // estourar o prazo inteiro), então elas começam junto com as leituras do
+  // banco em vez de esperar por elas — o jogador espera o maior dos dois
+  // caminhos, não a soma.
+  const [user, divisions, categorias, oficialFide, oficialCbx] = await Promise.all([
+    db.usuario.findUnique({ where: { email } }),
     db.divisoes.findMany({ where: { id_torneio: category.id_torneio } }),
     db.categoria.findMany({
       where: { id_torneio: category.id_torneio },
@@ -163,8 +179,12 @@ export async function submitInscription(
         max_y: true,
         default_division: true
       }
-    })
+    }),
+    buscarJogadorOficial((id) => verifyFideId(id, { prazoMs: PRAZO_CONSULTA_NO_ENVIO_MS }), fideId),
+    buscarJogadorOficial((id) => verifyCbxId(id, { prazoMs: PRAZO_CONSULTA_NO_ENVIO_MS }), cbxId)
   ])
+
+  if (!user) return { status: 'error', message: GENERIC_ERROR }
 
   // T15 + T17: a categoria vem do cliente, então precisa ser reconferida no
   // servidor — existe no torneio, é do gênero do jogador e corresponde à idade.
@@ -200,19 +220,6 @@ export async function submitInscription(
     Number(category.torneio.tempo_torneio_time_digitalTotempo?.time),
     Number(category.torneio.tempo_torneio_time_digitalTotempo?.plus)
   )
-
-  // T16: os dados oficiais NÃO vêm mais do JSON que o navegador envia
-  // (`playerFide`/`playerCbx`). Nome, federação, título e ratings são buscados
-  // aqui, direto na FIDE e na CBX, a partir dos IDs informados.
-  //
-  // Se o site oficial estiver fora do ar, a inscrição NÃO é bloqueada: o nome
-  // digitado é usado e os dados oficiais ficam vazios — o árbitro pode
-  // completá-los depois na tela de análise. As duas consultas correm em paralelo
-  // para não somar o tempo de espera.
-  const [oficialFide, oficialCbx] = await Promise.all([
-    buscarJogadorOficial((id) => verifyFideId(id, { prazoMs: PRAZO_CONSULTA_NO_ENVIO_MS }), fideId),
-    buscarJogadorOficial((id) => verifyCbxId(id, { prazoMs: PRAZO_CONSULTA_NO_ENVIO_MS }), cbxId)
-  ])
 
   // Sem tempo classificado (bullet) não existe rating correspondente.
   const ratingOf = (player: OfficialPlayer | null) =>
@@ -313,11 +320,15 @@ export async function submitInscription(
       },
     }
 
-    // Um email com problema não pode desfazer a inscrição já registrada.
-    await Promise.allSettled([
-      sendNewInscription(inscriptionForEmail, category.torneio.title, Number(category.id_torneio)),
-      sendRequestedMessageEmail(inscriptionForEmail, category.torneio.title),
-    ])
+    // Os emails saem DEPOIS da resposta (`after`): o jogador não precisa
+    // esperar o Resend para ver a inscrição concluída, e um email com problema
+    // continua não desfazendo a inscrição já registrada.
+    after(async () => {
+      await Promise.allSettled([
+        sendNewInscription(inscriptionForEmail, category.torneio.title, Number(category.id_torneio)),
+        sendRequestedMessageEmail(inscriptionForEmail, category.torneio.title),
+      ])
+    })
 
     return { status: 'success' }
   } catch (error) {

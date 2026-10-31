@@ -43,10 +43,9 @@ const emptyIdState: IdState = {
  * responde requisição vinda de IP de datacenter (é o caso da Vercel), então
  * consultá-la só fazia o jogador esperar por uma resposta que nunca chega.
  */
-const idRules: Record<IdKind, { isValid: (id: string) => boolean }> = {
-  fide: { isValid: (id) => id.length === 7 || id.length === 8 },
-  cbx: { isValid: (id) => id.length >= 4 && id.length <= 6 },
-}
+// O ID FIDE tem 7 ou 8 dígitos. O ID CBX não tem regra de tamanho: o cadastro
+// da CBX tem IDs de 1 a 6 dígitos.
+const fideIdValido = (id: string) => id.length === 7 || id.length === 8
 
 const initialState: InscriptionState = { status: 'idle' }
 
@@ -54,7 +53,10 @@ export default function InscriptionForm() {
   const tournament = useContext(TournamentContext)
   const router = useRouter()
 
-  const [state, formAction] = useActionState(submitInscription, initialState)
+  // `isPending` fica true do clique até a action responder: o envio confere os
+  // IDs nos sites oficiais e envia os emails, então demora o suficiente para o
+  // jogador precisar de um aviso de que a requisição está em andamento.
+  const [state, formAction, isPending] = useActionState(submitInscription, initialState)
 
   // ---- Identificação (ID FIDE / CBX) ----
   const [hasIds, setHasIds] = useState(true)
@@ -124,7 +126,7 @@ export default function InscriptionForm() {
 
     if (id === '' || fide.verifiedId === id) return
 
-    if (!idRules.fide.isValid(id)) {
+    if (!fideIdValido(id)) {
       setFide({ ...fide, verifiedId: '', player: null, error: '*Insira um ID válido', loading: false })
       return
     }
@@ -136,11 +138,6 @@ export default function InscriptionForm() {
     const id = cbx.value.trim()
 
     if (id === '' || cbx.loading || cbx.verifiedId === id) return
-
-    if (!idRules.cbx.isValid(id)) {
-      setCbx({ ...cbx, verifiedId: '', player: null, error: '*Insira um ID válido', loading: false })
-      return
-    }
 
     const ticket = ++consultaAtual.current
 
@@ -449,9 +446,16 @@ export default function InscriptionForm() {
               Valor total: {price === 0 ? '' : formatCurrency(price)}
             </h1>
 
-            <button type="submit" className="button red big" style={{ textAlign: 'start' }}>
+            <button
+              type="submit"
+              className={`button red big ${isPending ? 'disableDiv' : ''}`}
+              style={{ textAlign: 'start' }}
+              disabled={isPending}
+            >
               Solicitar inscrição
             </button>
+
+            {isPending ? <p className="error pErr">Enviando inscrição...</p> : ''}
 
             {state.status === 'duplicate' ? (
               <p className="error pErr">Este jogador já está inscrito neste torneio (mesmo ID FIDE ou CBX).</p>
