@@ -8,11 +8,22 @@
  * Módulo puro: sem banco, sem `'use server'`.
  */
 
-/** Os mesmos formatos que o formulário oferece. */
-const TIPOS_PERMITIDOS = ['image/jpeg', 'image/png']
+/**
+ * Vale qualquer imagem: o comprovante chega como print, foto da tela do banco
+ * ou foto tirada do papel, e cada aparelho salva num formato diferente.
+ */
+const PREFIXO_TIPO_IMAGEM = 'image/'
 
-/** Usado quando o navegador não informa o MIME (acontece em alguns aparelhos). */
-const EXTENSOES_PERMITIDAS = ['.jpg', '.jpeg', '.png']
+/**
+ * Usado quando o navegador não informa o MIME (acontece em alguns aparelhos).
+ * São as extensões dos formatos de imagem mais comuns, inclusive os de celular.
+ */
+const EXTENSOES_PERMITIDAS = [
+    '.jpg', '.jpeg', '.jpe', '.jfif',
+    '.png', '.gif', '.webp', '.bmp',
+    '.heic', '.heif', '.avif',
+    '.tif', '.tiff'
+]
 
 /**
  * O mesmo teto que o projeto já tinha: `serverActions.bodySizeLimit` é `20mb`
@@ -35,9 +46,9 @@ function temExtensaoPermitida(nome: string) {
 /**
  * Confere formato e tamanho.
  *
- * O tipo é aceito quando o MIME está na lista **ou** a extensão do arquivo é
- * uma das permitidas: alguns navegadores mandam `type` vazio para fotos, e
- * recusar por isso bloquearia inscrição legítima.
+ * O tipo é aceito quando o MIME começa com `image/` **ou** a extensão do
+ * arquivo é uma das permitidas: alguns navegadores mandam `type` vazio para
+ * fotos, e recusar por isso bloquearia inscrição legítima.
  */
 export function validarComprovante(arquivo: { size: number, type: string, name: string }): ResultadoComprovante {
     if (arquivo.size > TAMANHO_MAXIMO_COMPROVANTE) {
@@ -47,12 +58,12 @@ export function validarComprovante(arquivo: { size: number, type: string, name: 
         }
     }
 
-    const tipoAceito = TIPOS_PERMITIDOS.includes(arquivo.type.toLowerCase())
+    const tipoAceito = arquivo.type.toLowerCase().startsWith(PREFIXO_TIPO_IMAGEM)
 
     if (!tipoAceito && !temExtensaoPermitida(arquivo.name)) {
         return {
             ok: false,
-            motivo: 'O comprovante precisa ser uma imagem JPG ou PNG.'
+            motivo: 'O comprovante precisa ser uma imagem (JPG, PNG ou outro formato de imagem).'
         }
     }
 

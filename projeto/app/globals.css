@@ -385,7 +385,7 @@ select {
 
 select:focus {
   outline: none;
-  border-color: var(--mainblue);
+  border-color: black;
 }
 /* 
 input[type="text"]:focus,

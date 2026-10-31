@@ -8,6 +8,7 @@ import Form from "next/form";
 import { FormState } from "@/lib/types";
 import { searchCbx, searchFide } from "./searchID";
 import { TournamentContext } from "@/lib/context";
+import { validarComprovante } from "@/lib/comprovante";
 
 type DataPlayer = {
     name: string,
@@ -40,14 +41,18 @@ export default function FormEditInscriIndividual() {
 
     function uploadFile(file: File) {
         const fileName = String(file.name.split('\\').at(-1))
-        const extension = fileName.split('.').at(-1)
+        const input = document.getElementById('input-comprovante') as HTMLInputElement | null
+        const validacao = validarComprovante(file)
 
-        if (extension == 'jpeg' || extension == 'png' || extension == '.jpg') {
+        if (!validacao.ok) {
+            if (input) input.value = ''
+            setComprovante('')
+            alert(validacao.motivo)
+        } else {
             setComprovante(fileName)
         }
 
         const nome = document.getElementById('nome')
-        const input = document.getElementById('input-comprovante')
 
         if (nome && input) {
             nome.focus()
@@ -270,7 +275,7 @@ export default function FormEditInscriIndividual() {
                             </div>
                             
                             <div className='upload-file' style={{width: '100%'}}>
-                                <button onClick={() => document.getElementById('input-comprovante')?.click()} type='button' className='button red'><img src="/icons/upload.png" alt="" id="uploadIcon" fetchPriority='low' loading='lazy' decoding='async'/> Atualizar comprovante <span style={{fontSize: '10pt'}}>(.jpg / .jpeg / .png)</span></button>
+                                <button onClick={() => document.getElementById('input-comprovante')?.click()} type='button' className='button red'><img src="/icons/upload.png" alt="" id="uploadIcon" fetchPriority='low' loading='lazy' decoding='async'/> Atualizar comprovante <span style={{fontSize: '10pt'}}>(qualquer imagem)</span></button>
                                 {comprovante != '' ? (
                                     <p>({comprovante})</p>
                                 ) : ('')}
@@ -280,7 +285,7 @@ export default function FormEditInscriIndividual() {
                                     if (!files) return
                                     
                                     uploadFile(files)
-                                }} type='file' id='input-comprovante' name='fileComprovante' accept='.jpg,.jpeg,.png' hidden={true}/>     
+                                }} type='file' id='input-comprovante' name='fileComprovante' accept='image/*' hidden={true}/>
                             </div>
 
 

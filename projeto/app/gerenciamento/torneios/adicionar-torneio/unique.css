@@ -290,12 +290,6 @@ div .division {
 
 /* select */
 
-/* Foco dos selects: borda preta em vez do azul padrão do globals.css */
-#times select:focus,
-#select-categorie-sub select:focus {
-    border-color: black;
-}
-
 /* ===== Seções "formulário + tabela" ===== */
 /* O formulário e a tabela dividem a linha e encolhem juntos: a tabela só vai
    para baixo quando a tela é realmente pequena (ver responsive.css). */

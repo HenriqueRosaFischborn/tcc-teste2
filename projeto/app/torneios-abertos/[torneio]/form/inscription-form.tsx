@@ -3,6 +3,7 @@
 import { useActionState, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { TournamentContext } from '@/lib/context'
+import { validarComprovante } from '@/lib/comprovante'
 import PlayerFields from './player-fields'
 import { selectCategory } from './select-category'
 import { submitInscription } from './submit-inscription'
@@ -48,7 +49,6 @@ const idRules: Record<IdKind, { isValid: (id: string) => boolean }> = {
 }
 
 const initialState: InscriptionState = { status: 'idle' }
-const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png']
 
 export default function InscriptionForm() {
   const tournament = useContext(TournamentContext)
@@ -245,17 +245,23 @@ export default function InscriptionForm() {
     if (state.status === 'success') router.replace('/minhas-inscricoes')
   }, [state.status, router])
 
+  // A mesma conferência do servidor (`lib/comprovante.ts`), feita antes de
+  // enviar para avisar o jogador na hora em que ele escolhe o arquivo.
   function handleReceiptChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.currentTarget.files?.[0]
 
     if (!file) return
 
-    const extension = file.name.split('.').pop()?.toLowerCase() ?? ''
-    const allowed = ALLOWED_EXTENSIONS.includes(extension)
+    const validacao = validarComprovante(file)
 
-    if (!allowed) event.currentTarget.value = ''
+    if (!validacao.ok) {
+      event.currentTarget.value = ''
+      setReceiptName('')
+      alert(validacao.motivo)
+      return
+    }
 
-    setReceiptName(allowed ? file.name : '')
+    setReceiptName(file.name)
   }
 
   async function copyPixKey() {
@@ -419,7 +425,6 @@ export default function InscriptionForm() {
                 decoding="async"
               />
               {' Anexar comprovante '}
-              <span style={{ fontSize: '10pt' }}>(.jpg / .jpeg / .png)</span>
             </button>
             {receiptName !== '' ? <p>({receiptName})</p> : ''}
             <input
@@ -428,7 +433,7 @@ export default function InscriptionForm() {
               type="file"
               id="input-comprovante"
               name="fileComprovante"
-              accept=".jpg,.jpeg,.png"
+              accept="image/*"
               hidden
             />
           </div>

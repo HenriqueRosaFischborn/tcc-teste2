@@ -239,8 +239,28 @@ describe('T18 — validação do comprovante antes de gravar', () => {
         )
 
         expect(resultado.status).toBe('error')
-        expect(resultado.status === 'error' && resultado.message).toMatch(/JPG ou PNG/i)
+        expect(resultado.status === 'error' && resultado.message).toMatch(/precisa ser uma imagem/i)
         expect(incricaoCreateMock).not.toHaveBeenCalled()
+    })
+
+    it('aceita qualquer formato de imagem, não só JPG e PNG', async () => {
+        const resultado = await submitInscription(
+            estadoInicial,
+            formulario({ comprovante: arquivo('print.webp', 'image/webp', 4096) })
+        )
+
+        expect(resultado).toEqual({ status: 'success' })
+        expect(uploadMock).toHaveBeenCalledTimes(1)
+    })
+
+    it('aceita imagem sem MIME quando a extensão é de imagem', async () => {
+        const resultado = await submitInscription(
+            estadoInicial,
+            formulario({ comprovante: arquivo('foto.heic', '', 4096) })
+        )
+
+        expect(resultado).toEqual({ status: 'success' })
+        expect(uploadMock).toHaveBeenCalledTimes(1)
     })
 
     it('recusa arquivo acima do limite de 20 MB', async () => {
