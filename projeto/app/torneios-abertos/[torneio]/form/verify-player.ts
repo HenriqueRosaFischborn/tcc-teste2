@@ -170,13 +170,16 @@ const TITULOS: Record<string, string> = {
   'woman candidate master': 'WCM',
 }
 
-/** Devolve a abreviação, ou o texto como veio se a FIDE usar um título novo. */
+/**
+ * Devolve a abreviação, ou o texto como veio se a FIDE usar um título novo.
+ * Tudo em minúsculas ("gm", "wfm"), que é como a titulação aparece no sistema.
+ */
 const abreviarTitulo = (texto: string): string | null => {
   const nome = texto.replace(/\s+/g, ' ').trim()
 
   if (nome === '' || nome.toLowerCase() === 'none') return null
 
-  return TITULOS[nome.toLowerCase()] ?? nome
+  return (TITULOS[nome.toLowerCase()] ?? nome).toLowerCase()
 }
 
 /** Texto do primeiro elemento que casar com algum dos seletores. */

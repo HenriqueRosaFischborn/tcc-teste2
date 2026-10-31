@@ -136,14 +136,14 @@ describe('verifyFideId', () => {
 </body></html>`
 
     it.each([
-        ['Woman FIDE Master', 'WFM'],
-        ['Woman Grandmaster', 'WGM'],
-        ['Woman International Master', 'WIM'],
-        ['Woman Candidate Master', 'WCM'],
-        ['Grandmaster', 'GM'],
-        ['International Master', 'IM'],
-        ['FIDE Master', 'FM'],
-        ['Candidate Master', 'CM'],
+        ['Woman FIDE Master', 'wfm'],
+        ['Woman Grandmaster', 'wgm'],
+        ['Woman International Master', 'wim'],
+        ['Woman Candidate Master', 'wcm'],
+        ['Grandmaster', 'gm'],
+        ['International Master', 'im'],
+        ['FIDE Master', 'fm'],
+        ['Candidate Master', 'cm'],
         ['None', null],
     ])('abrevia o título "%s" como %s', async (extenso, esperado) => {
         fetchMock.mockResolvedValueOnce(resposta(paginaComTitulo(extenso)))

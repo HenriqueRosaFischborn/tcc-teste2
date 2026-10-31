@@ -1,0 +1,4 @@
+No;Nome Completo;Título;ID;Elonac;FIDE;DNasc;Fed;Sexo;Cat;Gr;NoClube;Nome Clube;id FIDE;Fonte;Pts;Des1;Des2;Des3;Des4;Des5;Des6;Clas;Sobrenome;Nome;Atítulo
+1;undefined Alexandr Hilario Takeda Sakai dos Santos Fier;;5208;2464;null;11.03.1988;BRA;;;Criciuma;0;Clube de Xadrez de Criciuma;2107139;;0;0;0;0;0;0;0;0;undefined;Alexandr Hilario Takeda Sakai dos Santos Fier;
+2;undefined Andre Diamant;;7489;2090;null;09.02.1990;BRA;;;Florianólis;0;FXC;2108356;;0;0;0;0;0;0;0;0;undefined;Andre Diamant;
+3;Agatha Hurba Nunes;WFM;25108;2068;1935;23.03.1999;BRA;;;Criciuma;0;;2114852;;0;0;0;0;0;0;0;0;Agatha Hurba;Nunes;

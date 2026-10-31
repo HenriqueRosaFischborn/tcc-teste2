@@ -220,7 +220,8 @@ export default function BodyClient({nameTournment, players, comprovantes, catego
                                         </td>
 
                                         <td style={{backgroundColor: nowInscri[el.uuid].titulo !== defaultInscri[el.uuid]?.titulo ? 'var(--ligthgray)' : ''}}>
-                                            <input type="text" defaultValue={el.titulo ? el.titulo : ''} placeholder={'Nenhum'} size={el.titulo ? el.titulo.length : 6} onInput={(e) => reguleSize(e.currentTarget)} onChange={(e) => updateObjNowSelect(el.uuid, 'titulo', e.currentTarget.value, 'string')}/>
+                                            {/* Titulação sempre em minúsculas (gm, wfm...), como vem da FIDE. */}
+                                            <input type="text" defaultValue={el.titulo ? el.titulo : ''} placeholder={'Nenhum'} size={el.titulo ? el.titulo.length : 6} onInput={(e) => {e.currentTarget.value = e.currentTarget.value.toLowerCase(); reguleSize(e.currentTarget)}} onChange={(e) => updateObjNowSelect(el.uuid, 'titulo', e.currentTarget.value, 'string')}/>
                                         </td> 
 
                                         <td style={{backgroundColor: nowInscri[el.uuid].city !== defaultInscri[el.uuid]?.city ? 'var(--ligthgray)' : ''}}>
