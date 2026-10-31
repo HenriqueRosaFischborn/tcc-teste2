@@ -50,11 +50,15 @@ article > .content {
     width: 40%;
 }
 
-#times div {
+#times div, #select-categorie-sub {
     flex-direction: row;
 }
 
-#times select {
+#select-categorie-sub {
+    width: 50%;
+}
+
+#times select, #select-categorie-sub select {
     flex: 1;
 }
 
