@@ -89,11 +89,22 @@ export default async function EditTournment({params}: {params: Promise<{ torneio
     
     const categories: Categorie[] = cats.map(cat => ({
         name: cat.name,
-        value: String(cat.value),
+        // Mesmo formato que o formulário gera ao adicionar uma categoria
+        // (`R$ 0,01`). Com o valor cru (`0.01`) o `sincronizar-categorias`
+        // relia o número como texto e gravava R$ 1.
+        value: cat.value.toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        }),
         from: cat.min_y,
         to: cat.max_y,
         fide: cat.vale_fide,
-        divisionFor: String(cat.default_division),
+        // O formulário identifica a divisão pelo NOME (`divisionFor` é sempre
+        // comparado com `division.name` no `catArea`). Antes vinha o id de
+        // `default_division`, então nenhuma categoria vinda do banco casava com
+        // a divisão escolhida ao adicionar uma nova — e as demais categorias
+        // daquela divisão sumiam da tela.
+        divisionFor: cat.divisoes.name,
         divisoes: {
             name: cat.divisoes.name
         }
