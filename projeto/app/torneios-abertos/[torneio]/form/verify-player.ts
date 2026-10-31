@@ -14,6 +14,9 @@ countries.registerLocale(en)
  * a conexão fica pendurada em vez de ser recusada. Com 2 tentativas de 12 s o
  * jogador passava 24,5 s olhando um formulário parado, sem nenhum aviso, antes
  * de o erro aparecer — que é exatamente o "fica só carregando" relatado.
+ *
+ * Quem resolve isso é o `FIDE_PROXY` (veja abaixo): o prazo continua curto para
+ * o caso sem proxy, em que a FIDE simplesmente não vai responder.
  */
 const PRAZO_TOTAL_MS = 8000
 
@@ -36,6 +39,44 @@ const BROWSER_HEADERS = {
   'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8',
   // Sem o Referer a FIDE às vezes responde com a página de bloqueio.
   Referer: 'https://ratings.fide.com/',
+}
+
+/**
+ * A FIDE recusa (ou deixa pendurada) a conexão de IP de nuvem — é o caso da
+ * Vercel, e é por isso que a consulta funciona no localhost e falha hospedada.
+ * Nenhuma biblioteca HTTP resolve isso: o que decide é o IP de origem.
+ *
+ * `FIDE_PROXY` desvia SÓ a consulta da FIDE por um endereço que a FIDE aceita
+ * (API de scraping, proxy próprio, gateway). É um template com `{url}` no lugar
+ * do perfil:
+ *
+ *   FIDE_PROXY="https://api.scraperapi.com/?api_key=...&url={url}"
+ *
+ * Sem a variável — localhost, por exemplo — a consulta continua indo direto.
+ */
+const aplicarProxyFide = (url: string): string => {
+  const proxy = process.env.FIDE_PROXY?.trim()
+
+  if (!proxy) return url
+
+  // Serviços que não usam template recebem o endereço anexado ao final, que é o
+  // formato ".../raw?url=" adotado por boa parte deles.
+  return proxy.includes('{url}')
+    ? proxy.replace('{url}', encodeURIComponent(url))
+    : proxy + encodeURIComponent(url)
+}
+
+/**
+ * O log da Vercel é público para quem tem acesso ao projeto, e o endereço do
+ * proxy carrega a chave da API na query. Só o endereço sem query vai para lá.
+ */
+const urlParaLog = (url: string): string => {
+  try {
+    const { origin, pathname } = new URL(url)
+    return origin + pathname
+  } catch {
+    return 'endereço inválido'
+  }
 }
 
 /**
@@ -96,7 +137,9 @@ async function fetchHtml(url: string, prazoTotalMs: number): Promise<FetchResult
 
     if (ultimo.ok) return ultimo
 
-    console.error(`[consulta-oficial] tentativa ${tentativa}/${TENTATIVAS} falhou em ${url}: ${ultimo.motivo}`)
+    console.error(
+      `[consulta-oficial] tentativa ${tentativa}/${TENTATIVAS} falhou em ${urlParaLog(url)}: ${ultimo.motivo}`
+    )
 
     if (tentativa === TENTATIVAS || !valeRepetir(ultimo.motivo)) break
 
@@ -133,7 +176,7 @@ export async function verifyFideId(
   id: string,
   opcoes: ConsultaOpcoes = {}
 ): Promise<LookupResult> {
-  const url = `https://ratings.fide.com/profile/${encodeURIComponent(id)}`
+  const url = aplicarProxyFide(`https://ratings.fide.com/profile/${encodeURIComponent(id)}`)
   const busca = await fetchHtml(url, opcoes.prazoMs ?? PRAZO_TOTAL_MS)
 
   if (!busca.ok) return { status: 'unavailable', motivo: busca.motivo }

@@ -65,6 +65,8 @@ export default function InscriptionForm() {
 
   // ---- Dados do jogador ----
   const [name, setName] = useState('')
+  const [city, setCity] = useState('')
+  const [club, setClub] = useState('')
   const [birthDate, setBirthDate] = useState('')
   const [genre, setGenre] = useState<Genre>('masc')
   const [identityTouched, setIdentityTouched] = useState(false)
@@ -235,7 +237,7 @@ export default function InscriptionForm() {
   const price = category?.price ?? 0
 
   // ---- Envio ----
-  const fieldsComplete = name.trim() !== '' && dateComplete
+  const fieldsComplete = name.trim() !== '' && city.trim() !== '' && dateComplete
   const identityOk = !hasIds || (nameError === '' && infoError === '')
   const canSubmit = price !== 0 && fieldsComplete && identityOk && receiptName !== ''
   const showCategory =
@@ -374,6 +376,10 @@ export default function InscriptionForm() {
             hasIds={hasIds}
             name={name}
             onNameChange={setName}
+            city={city}
+            onCityChange={setCity}
+            club={club}
+            onClubChange={setClub}
             onFieldBlur={() => setIdentityTouched(true)}
             nameError={nameError}
             onBirthDateChange={setBirthDate}

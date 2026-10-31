@@ -6,32 +6,32 @@ import Fields from "./fields";
 import actionInscriIndividual from "./action";
 import Form from "next/form";
 import { FormState } from "@/lib/types";
-import { searchCbx, searchFide } from "./searchID";
 import { TournamentContext } from "@/lib/context";
 import { validarComprovante } from "@/lib/comprovante";
+import { verifyCbxId, verifyFideId } from "@/app/torneios-abertos/[torneio]/form/verify-player";
+import type { LookupResult, OfficialPlayer } from "@/app/torneios-abertos/[torneio]/form/types";
+import { consultarComPrazo, handleEnterBlur } from "@/app/torneios-abertos/[torneio]/form/utils";
 
-type DataPlayer = {
-    name: string,
-    bornYear: string,
-    genre: string,
-    title: string,
-    idFide: string,
-    ratings: {
-        standard: string,
-        rapid: string,
-        blitz: string
+/**
+ * Chama a consulta oficial sem deixar a tela travada: falha de transporte
+ * (função na Vercel interrompida, sem rede) vira um aviso, não um formulário
+ * carregando para sempre.
+ */
+async function consultar(
+    buscar: (id: string) => Promise<LookupResult>,
+    id: string
+): Promise<LookupResult> {
+    try {
+        return await consultarComPrazo(id, buscar)
+    } catch (error) {
+        return {
+            status: 'unavailable',
+            motivo: error instanceof Error ? error.message.slice(0, 120) : 'falha ao chamar o servidor',
+        }
     }
 }
 
 export default function FormEditInscriIndividual() {
-    
-    
-    function handleEnterBlur(e: React.KeyboardEvent<HTMLInputElement>) {
-        if (e.key === 'Enter') {
-            e.preventDefault()
-            e.currentTarget.blur()
-        }
-    }
 
     const initialValue: FormState= {}
    
@@ -107,16 +107,23 @@ export default function FormEditInscriIndividual() {
     const [idCbx, setIdCbx] = useState<string>('')
     const [errorIdFide, setErrorIdFide] = useState<string>('')
     const [errorIdCbx, setErrorIdCbx] = useState<string>('')
-    const [playerFide, setPlayerFide] = useState<DataPlayer>()
-    const [playerCbx, setPlayerCbx] = useState<DataPlayer>()
-    
-    
+    const [playerFide, setPlayerFide] = useState<OfficialPlayer>()
+    const [playerCbx, setPlayerCbx] = useState<OfficialPlayer>()
+    /**
+     * Motivo de a FIDE não ter respondido. A FIDE recusa conexão de IP de nuvem
+     * (Vercel), e travar a edição por causa disso deixaria o jogador sem saída —
+     * então a identidade segue sendo conferida pela CBX, que informa nome, data
+     * de nascimento e o próprio ID FIDE.
+     */
+    const [fideIndisponivel, setFideIndisponivel] = useState<string>('')
+
     async function sendIds(input: HTMLInputElement) {
         const id = input.value.trim()
         const type = input.name === 'idfide' ? 'fide' : 'cbx'
 
         if (type === 'fide' && id != idFide) {
             setPlayerFide(undefined)
+            setFideIndisponivel('')
 
             if (id.length !== 7 && id.length !== 8) {
                 setErrorIdFide('*Insira um ID válido')
@@ -126,23 +133,27 @@ export default function FormEditInscriIndividual() {
 
             setErrorIdFide('')
 
-            
-                const dataPlayerFide = await searchFide(id) as DataPlayer
+            const resultado = await consultar(verifyFideId, id)
 
-                if (
-                    !dataPlayerFide ||
-                    dataPlayerFide.name === 'Usuário FIDE não encontrado'
-                ) {
-                    setPlayerFide(undefined)
-                    setErrorIdFide('*Usuário FIDE não encontrado')
-                    setIdFide('')
-                    return
-                }
+            if (resultado.status === 'not-found') {
+                setPlayerFide(undefined)
+                setErrorIdFide('*Usuário FIDE não encontrado')
+                setIdFide('')
+                return
+            }
 
-                setIdFide(id)
-                setPlayerFide(dataPlayerFide)
+            if (resultado.status === 'unavailable') {
+                setPlayerFide(undefined)
                 setErrorIdFide('')
-            
+                setFideIndisponivel(resultado.motivo ?? 'sem resposta')
+                // O ID fica sem confirmar para que sair do campo tente de novo.
+                setIdFide('')
+                return
+            }
+
+            setIdFide(id)
+            setPlayerFide(resultado.player)
+            setErrorIdFide('')
         }
 
         if (type === 'cbx' && id != idCbx) {
@@ -156,23 +167,29 @@ export default function FormEditInscriIndividual() {
 
             setErrorIdCbx('')
 
-            
-                const dataPlayerCbx = await searchCbx(id) as DataPlayer
+            const resultado = await consultar(verifyCbxId, id)
 
-                if (
-                    !dataPlayerCbx ||
-                    dataPlayerCbx.name === 'Usuário CBX não encontrado'
-                ) {
-                    setPlayerCbx(undefined)
-                    setErrorIdCbx('*Usuário CBX não encontrado')
-                    setIdCbx('')
-                    return
-                }
+            if (resultado.status === 'not-found') {
+                setPlayerCbx(undefined)
+                setErrorIdCbx('*Usuário CBX não encontrado')
+                setIdCbx('')
+                return
+            }
 
-                setIdCbx(id)
-                setPlayerCbx(dataPlayerCbx)
-                setErrorIdCbx('')
-            
+            if (resultado.status === 'unavailable') {
+                setPlayerCbx(undefined)
+                setErrorIdCbx(
+                    `*Não foi possível consultar a CBX agora${
+                        resultado.motivo ? ` (${resultado.motivo})` : ''
+                    }. Tente novamente.`
+                )
+                setIdCbx('')
+                return
+            }
+
+            setIdCbx(id)
+            setPlayerCbx(resultado.player)
+            setErrorIdCbx('')
         }
     }
 
@@ -236,6 +253,7 @@ export default function FormEditInscriIndividual() {
                                 <label htmlFor="idfide">ID Fide: <p className="ast">*</p></label>
                                 <input id="form-fide" type="text" name="idfide" defaultValue={idFide ? idFide : inscricao.id_fide} onKeyDown={handleEnterBlur} maxLength={8} inputMode="numeric"  onInput={(e) => {e.currentTarget.value = e.currentTarget.value.replace(/\D/g, '')}} onBlur={(e) => sendIds(e.currentTarget)}/>
                                 {errorIdFide != '' ? <p className="error">{errorIdFide}</p> : ''}
+                                {fideIndisponivel != '' ? <p className="obs obs-fide">*A FIDE não respondeu ({fideIndisponivel}). A conferência segue pela CBX — o ID será reconferido pela organização.</p> : ''}
                             </div>
                             <input type="text" hidden name="playerFide" value={JSON.stringify(playerFide)}/>
                         
@@ -247,12 +265,14 @@ export default function FormEditInscriIndividual() {
                             <input type="text" hidden name="playerCbx" value={JSON.stringify(playerCbx)}/>
                         </>): ''}
                         
-                        {(hasFide && (!playerFide || !playerCbx)) || (errorIdFide != '' || errorIdCbx != '') ? (<> 
-                            <p className="error">*Preencha os campos acima antes de continuar</p> 
+                        {/* FIDE fora do ar não trava a edição: a CBX ainda confere
+                            nome e data de nascimento. */}
+                        {((hasFide && (!playerCbx || (!playerFide && fideIndisponivel == ''))) || (errorIdFide != '' || errorIdCbx != '')) ? (<>
+                            <p className="error">*Preencha os campos acima antes de continuar</p>
                         </>): ''}
 
-                        
-                        <div className={`form ${(hasFide && (!playerFide || !playerCbx)) || (errorIdFide != '' || errorIdCbx != '') ? 'disableDiv' : ''}`} style={{width: '100%'}}> 
+
+                        <div className={`form ${(hasFide && (!playerCbx || (!playerFide && fideIndisponivel == ''))) || (errorIdFide != '' || errorIdCbx != '') ? 'disableDiv' : ''}`} style={{width: '100%'}}>
                             <Fields inscricao={inscricao} id={id.id} playerCbx={playerCbx} playerFide={playerFide} hasFide={hasFide} setindividualPrice={setVPrice} state={state} setButton={setButton} />
                             
                             <div id="qr-div" >

@@ -92,7 +92,9 @@ export async function submitInscription(
   const genre = toText(formData.get('genre'))
   const categoryUuid = toText(formData.get('uuidCat'))
 
-  if (!name || !birthDate || !categoryUuid || (genre !== 'masc' && genre !== 'fem')) {
+  // A cidade é obrigatória no banco (`incricao.city`) e vai nos emails e na
+  // exportação para o ChessResults; o clube é opcional.
+  if (!name || !city || !birthDate || !categoryUuid || (genre !== 'masc' && genre !== 'fem')) {
     return { status: 'error', message: 'Preencha todos os campos obrigatórios (*).' }
   }
 

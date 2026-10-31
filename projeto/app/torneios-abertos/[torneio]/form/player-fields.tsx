@@ -8,6 +8,10 @@ type PlayerFieldsProps = {
   hasIds: boolean
   name: string
   onNameChange: (value: string) => void
+  city: string
+  onCityChange: (value: string) => void
+  club: string
+  onClubChange: (value: string) => void
   onFieldBlur: () => void
   nameError: string
   onBirthDateChange: (value: string) => void
@@ -25,6 +29,10 @@ export default function PlayerFields({
   hasIds,
   name,
   onNameChange,
+  city,
+  onCityChange,
+  club,
+  onClubChange,
   onFieldBlur,
   nameError,
   onBirthDateChange,
@@ -59,6 +67,31 @@ export default function PlayerFields({
           onKeyDown={handleEnterBlur}
         />
         {hasIds && nameError !== '' ? <p className="error">{nameError}</p> : ''}
+      </div>
+
+      <div style={{ width: 'calc(50% - 15px)' }}>
+        <label htmlFor="cidade">Cidade que representa: <p className="ast">*</p></label>
+        <input
+          className="needed"
+          id="cidade"
+          type="text"
+          name="city"
+          value={city}
+          onChange={(event) => onCityChange(event.currentTarget.value)}
+          onKeyDown={handleEnterBlur}
+        />
+      </div>
+
+      <div style={{ width: 'calc(50% - 15px)' }}>
+        <label htmlFor="clube">Clube que representa:</label>
+        <input
+          id="clube"
+          type="text"
+          name="club"
+          value={club}
+          onChange={(event) => onClubChange(event.currentTarget.value)}
+          onKeyDown={handleEnterBlur}
+        />
       </div>
 
       <div style={{ width: '35%' }}>

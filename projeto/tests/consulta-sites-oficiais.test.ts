@@ -126,6 +126,83 @@ describe('verifyFideId', () => {
     })
 })
 
+describe('verifyFideId com proxy de saída', () => {
+    // A FIDE não atende IP de nuvem; FIDE_PROXY desvia só a consulta dela.
+    const comProxy = (template: string, teste: () => Promise<void>) => async () => {
+        process.env.FIDE_PROXY = template
+
+        try {
+            await teste()
+        } finally {
+            delete process.env.FIDE_PROXY
+        }
+    }
+
+    it('passa a consulta pelo template quando FIDE_PROXY está definido', comProxy(
+        'https://proxy.exemplo/raw?url={url}',
+        async () => {
+            fetchMock.mockResolvedValueOnce(resposta(paginaDoJogador))
+
+            await expect(verifyFideId('44731736')).resolves.toMatchObject({ status: 'found' })
+
+            const [url] = fetchMock.mock.calls[0]
+            expect(url).toBe(
+                'https://proxy.exemplo/raw?url=https%3A%2F%2Fratings.fide.com%2Fprofile%2F44731736'
+            )
+        }
+    ))
+
+    it('anexa o endereço quando o template não tem {url}', comProxy(
+        'https://proxy.exemplo/fetch?url=',
+        async () => {
+            fetchMock.mockResolvedValueOnce(resposta(paginaDoJogador))
+
+            await verifyFideId('44731736')
+
+            const [url] = fetchMock.mock.calls[0]
+            expect(url).toBe(
+                'https://proxy.exemplo/fetch?url=https%3A%2F%2Fratings.fide.com%2Fprofile%2F44731736'
+            )
+        }
+    ))
+
+    it('não vaza a chave do proxy no log da Vercel', comProxy(
+        'https://api.scraperapi.com/?api_key=SEGREDO&url={url}',
+        async () => {
+            fetchMock.mockResolvedValue(resposta('', 503))
+
+            await verifyFideId('44731736')
+
+            const registrado = vi
+                .mocked(console.error)
+                .mock.calls.map((chamada) => chamada.join(' '))
+                .join('\n')
+
+            expect(registrado).toContain('api.scraperapi.com')
+            expect(registrado).not.toContain('SEGREDO')
+        }
+    ))
+
+    it('mantém a consulta direta quando a variável não existe', async () => {
+        fetchMock.mockResolvedValueOnce(resposta(paginaDoJogador))
+
+        await verifyFideId('44731736')
+
+        expect(fetchMock.mock.calls[0][0]).toBe('https://ratings.fide.com/profile/44731736')
+    })
+
+    it('não desvia a consulta da CBX, que responde normalmente', comProxy(
+        'https://proxy.exemplo/raw?url={url}',
+        async () => {
+            fetchMock.mockResolvedValueOnce(resposta('<html><body></body></html>'))
+
+            await verifyCbxId('76967')
+
+            expect(fetchMock.mock.calls[0][0]).toBe('https://www.cbx.org.br/jogador/76967')
+        }
+    ))
+})
+
 describe('verifyCbxId', () => {
     const paginaCbx = `
     <html><body>

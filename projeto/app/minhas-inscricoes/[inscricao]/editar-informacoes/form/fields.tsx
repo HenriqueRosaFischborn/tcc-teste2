@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { SelectCategorie } from "./selectCategorie"
 import { usePathname } from "next/navigation"
 import { FormState, Player } from "@/lib/types"
+import type { OfficialPlayer } from "@/app/torneios-abertos/[torneio]/form/types"
 import { error } from "console"
 
 type Divisions = {
@@ -16,20 +17,7 @@ type ErrorID = {
     error?: Boolean
 }
 
-type DataPlayer = {
-    name: string,
-    bornYear: string,
-    genre: string,
-    title: string,
-    idFide: string,
-    ratings: {
-        standard: string,
-        rapid: string,
-        blitz: string
-    }
-}
-
-export default function Fields({inscricao, playerCbx, playerFide, hasFide, setindividualPrice, state, setButton, setIdError, player, id}: {inscricao: Player, id: number, playerCbx?: DataPlayer, playerFide?: DataPlayer, hasFide: boolean, setIdError?: Function, setindividualPrice?: Function, setButton?: Function, player?: any, state: FormState}) {
+export default function Fields({inscricao, playerCbx, playerFide, hasFide, setindividualPrice, state, setButton, setIdError, player, id}: {inscricao: Player, id: number, playerCbx?: OfficialPlayer, playerFide?: OfficialPlayer, hasFide: boolean, setIdError?: Function, setindividualPrice?: Function, setButton?: Function, player?: any, state: FormState}) {
     function handleEnterBlur(e: React.KeyboardEvent<HTMLInputElement>) {
         if (e.key === 'Enter') {
             e.preventDefault()
