@@ -357,12 +357,8 @@ export default function InscriptionForm() {
 
         {consultando ? <p className="obs">Carregando...</p> : ''}
 
-        {idsBlocked ? (
-          <p className="error">
-            {consultando
-              ? '*Consultando o cadastro da CBX, aguarde...'
-              : '*Preencha os campos acima antes de continuar'}
-          </p>
+        {idsBlocked && !consultando ? (
+          <p className="error">*Preencha os campos acima antes de continuar</p>
         ) : (
           ''
         )}
