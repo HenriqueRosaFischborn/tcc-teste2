@@ -52,6 +52,13 @@ async function buscarJogadorOficial(
   return resultado.status === 'found' ? resultado.player : null
 }
 
+/**
+ * Aqui o dado oficial só enriquece o cadastro (nome, rating, federação) e o
+ * árbitro completa o que faltar, então vale desistir cedo em vez de segurar o
+ * jogador na tela de envio esperando um site oficial que não vai responder.
+ */
+const PRAZO_CONSULTA_NO_ENVIO_MS = 5000
+
 async function uploadReceipt(file: File, tournamentId: bigint, userId: number, inscriptionUuid: string): Promise<boolean> {
   const path = `comprovantes/${tournamentId}/${userId}/${inscriptionUuid}`
 
@@ -201,8 +208,8 @@ export async function submitInscription(
   // completá-los depois na tela de análise. As duas consultas correm em paralelo
   // para não somar o tempo de espera.
   const [oficialFide, oficialCbx] = await Promise.all([
-    buscarJogadorOficial(verifyFideId, fideId),
-    buscarJogadorOficial(verifyCbxId, cbxId)
+    buscarJogadorOficial((id) => verifyFideId(id, { prazoMs: PRAZO_CONSULTA_NO_ENVIO_MS }), fideId),
+    buscarJogadorOficial((id) => verifyCbxId(id, { prazoMs: PRAZO_CONSULTA_NO_ENVIO_MS }), cbxId)
   ])
 
   // Sem tempo classificado (bullet) não existe rating correspondente.

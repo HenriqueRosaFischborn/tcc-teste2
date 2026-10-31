@@ -8,19 +8,25 @@ import type { LookupResult, OfficialPlayer } from './types'
 countries.registerLocale(en)
 
 /**
- * Tempo máximo de cada consulta. Sem esse limite, um site oficial fora do ar
- * (ou bloqueando o IP do servidor) deixa a requisição pendurada até o tempo
- * máximo da função na Vercel — e o formulário fica travado para o jogador.
+ * Orçamento total de UMA consulta, somando todas as tentativas.
+ *
+ * A FIDE não responde requisição vinda de IP de datacenter (é o caso da Vercel):
+ * a conexão fica pendurada em vez de ser recusada. Com 2 tentativas de 12 s o
+ * jogador passava 24,5 s olhando um formulário parado, sem nenhum aviso, antes
+ * de o erro aparecer — que é exatamente o "fica só carregando" relatado.
  */
-const REQUEST_TIMEOUT_MS = 12000
+const PRAZO_TOTAL_MS = 8000
 
-/**
- * Quantas vezes cada site oficial é tentado antes de desistir. A FIDE recusa ou
- * demora de forma intermitente quando a requisição vem de IP de datacenter (é o
- * caso da Vercel), então uma segunda tentativa resolve boa parte das falhas.
- */
+/** Teto de cada tentativa isolada, sempre limitado ao que resta do orçamento. */
+const PRAZO_POR_TENTATIVA_MS = 6000
+
 const TENTATIVAS = 2
-const INTERVALO_ENTRE_TENTATIVAS_MS = 500
+const INTERVALO_ENTRE_TENTATIVAS_MS = 400
+
+/** Abaixo disso não vale começar outra tentativa: ela já nasceria sem tempo. */
+const TEMPO_MINIMO_TENTATIVA_MS = 1200
+
+const MOTIVO_TEMPO_ESGOTADO = 'tempo esgotado'
 
 // Os sites oficiais recusam requisições com cara de robô (ex.: "Mozilla/5.0" sozinho).
 const BROWSER_HEADERS = {
@@ -43,17 +49,17 @@ const descreverErro = (error: unknown): string => {
   if (!(error instanceof Error)) return String(error)
 
   // Timeout do AbortSignal chega como TimeoutError/DOMException.
-  if (error.name === 'TimeoutError' || error.name === 'AbortError') return 'tempo esgotado'
+  if (error.name === 'TimeoutError' || error.name === 'AbortError') return MOTIVO_TEMPO_ESGOTADO
 
   return error.message === '' ? error.name : error.message
 }
 
-async function tentarFetch(url: string): Promise<FetchResult> {
+async function tentarFetch(url: string, prazoMs: number): Promise<FetchResult> {
   try {
     const response = await fetch(url, {
       headers: BROWSER_HEADERS,
       cache: 'no-store',
-      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      signal: AbortSignal.timeout(prazoMs),
     })
 
     if (!response.ok) return { ok: false, motivo: `HTTP ${response.status}` }
@@ -65,23 +71,36 @@ async function tentarFetch(url: string): Promise<FetchResult> {
 }
 
 /**
- * Baixa a página, tentando mais de uma vez. O log fica no servidor porque é lá
- * que a falha acontece quando o sistema está hospedado — sem ele, uma recusa da
- * FIDE é indistinguível de um problema de rede.
+ * Vale a pena repetir? Um site que aceitou a conexão e devolveu erro pode
+ * responder bem na segunda. Um que estourou o prazo (IP bloqueado, conexão
+ * descartada no meio do caminho) não vai responder na segunda — repetir só
+ * dobraria a espera do jogador.
  */
-async function fetchHtml(url: string): Promise<FetchResult> {
-  let ultimo: FetchResult = { ok: false, motivo: 'sem tentativas' }
+const valeRepetir = (motivo: string) => motivo !== MOTIVO_TEMPO_ESGOTADO
+
+/**
+ * Baixa a página dentro de um orçamento de tempo fixo. O log fica no servidor
+ * porque é lá que a falha acontece quando o sistema está hospedado — sem ele,
+ * uma recusa da FIDE é indistinguível de um problema de rede.
+ */
+async function fetchHtml(url: string, prazoTotalMs: number): Promise<FetchResult> {
+  const limite = Date.now() + prazoTotalMs
+  let ultimo: FetchResult = { ok: false, motivo: MOTIVO_TEMPO_ESGOTADO }
 
   for (let tentativa = 1; tentativa <= TENTATIVAS; tentativa++) {
-    ultimo = await tentarFetch(url)
+    const restante = limite - Date.now()
+
+    if (restante < TEMPO_MINIMO_TENTATIVA_MS) break
+
+    ultimo = await tentarFetch(url, Math.min(PRAZO_POR_TENTATIVA_MS, restante))
 
     if (ultimo.ok) return ultimo
 
     console.error(`[consulta-oficial] tentativa ${tentativa}/${TENTATIVAS} falhou em ${url}: ${ultimo.motivo}`)
 
-    if (tentativa < TENTATIVAS) {
-      await new Promise((resolve) => setTimeout(resolve, INTERVALO_ENTRE_TENTATIVAS_MS))
-    }
+    if (tentativa === TENTATIVAS || !valeRepetir(ultimo.motivo)) break
+
+    await new Promise((resolve) => setTimeout(resolve, INTERVALO_ENTRE_TENTATIVAS_MS))
   }
 
   return ultimo
@@ -102,10 +121,20 @@ const primeiroTexto = ($: cheerio.CheerioAPI, seletores: string): string => {
   return ''
 }
 
+/**
+ * `prazoMs` existe para quem chama poder encurtar a espera. O envio da
+ * inscrição usa o dado oficial só para enriquecer o cadastro, então prefere
+ * desistir antes a segurar o jogador na tela de envio.
+ */
+type ConsultaOpcoes = { prazoMs?: number }
+
 /** Extrai os dados do perfil em ratings.fide.com. */
-export async function verifyFideId(id: string): Promise<LookupResult> {
+export async function verifyFideId(
+  id: string,
+  opcoes: ConsultaOpcoes = {}
+): Promise<LookupResult> {
   const url = `https://ratings.fide.com/profile/${encodeURIComponent(id)}`
-  const busca = await fetchHtml(url)
+  const busca = await fetchHtml(url, opcoes.prazoMs ?? PRAZO_TOTAL_MS)
 
   if (!busca.ok) return { status: 'unavailable', motivo: busca.motivo }
 
@@ -164,8 +193,14 @@ export async function verifyFideId(id: string): Promise<LookupResult> {
 }
 
 /** Extrai os dados do perfil em cbx.org.br. */
-export async function verifyCbxId(id: string): Promise<LookupResult> {
-  const busca = await fetchHtml(`https://www.cbx.org.br/jogador/${encodeURIComponent(id)}`)
+export async function verifyCbxId(
+  id: string,
+  opcoes: ConsultaOpcoes = {}
+): Promise<LookupResult> {
+  const busca = await fetchHtml(
+    `https://www.cbx.org.br/jogador/${encodeURIComponent(id)}`,
+    opcoes.prazoMs ?? PRAZO_TOTAL_MS
+  )
 
   if (!busca.ok) return { status: 'unavailable', motivo: busca.motivo }
 

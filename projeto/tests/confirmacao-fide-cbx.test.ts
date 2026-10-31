@@ -39,16 +39,20 @@ describe('confirmarIdFidePelaCbx', () => {
     it('recusa quando o cadastro da CBX traz outro ID FIDE', () => {
         const resultado = confirmarIdFidePelaCbx('44731736', jogadorCbx('1234567'))
 
+        // `divergente` é o que trava o formulário: o número digitado está errado.
         expect(resultado).toEqual({
             ok: false,
-            motivo: 'O cadastro da CBX informa o ID FIDE 1234567.'
+            motivo: 'O cadastro da CBX informa o ID FIDE 1234567.',
+            divergente: true
         })
     })
 
     it('recusa quando o cadastro da CBX não informa ID FIDE', () => {
+        // Aqui quem falha é o dado da CBX, não o jogador: não pode travar a inscrição.
         expect(confirmarIdFidePelaCbx('44731736', jogadorCbx(null))).toEqual({
             ok: false,
-            motivo: 'O cadastro da CBX não informa ID FIDE.'
+            motivo: 'O cadastro da CBX não informa ID FIDE.',
+            divergente: false
         })
     })
 })

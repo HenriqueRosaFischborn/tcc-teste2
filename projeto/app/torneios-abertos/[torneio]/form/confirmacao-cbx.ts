@@ -10,7 +10,12 @@ import type { OfficialPlayer } from './types'
  */
 export type ConfirmacaoCbx =
   | { ok: true; player: OfficialPlayer }
-  | { ok: false; motivo: string }
+  /**
+   * `divergente` separa as duas recusas: o cadastro da CBX aponta outro ID
+   * (erro do jogador, trava o formulário) de o cadastro da CBX não trazer ID
+   * FIDE nenhum (limitação do dado, não pode travar o jogador).
+   */
+  | { ok: false; motivo: string; divergente: boolean }
 
 export function confirmarIdFidePelaCbx(
   idFide: string,
@@ -19,11 +24,15 @@ export function confirmarIdFidePelaCbx(
   const idNoCadastro = jogadorCbx.idFide?.trim() ?? ''
 
   if (idNoCadastro === '') {
-    return { ok: false, motivo: 'O cadastro da CBX não informa ID FIDE.' }
+    return { ok: false, motivo: 'O cadastro da CBX não informa ID FIDE.', divergente: false }
   }
 
   if (idNoCadastro !== idFide.trim()) {
-    return { ok: false, motivo: `O cadastro da CBX informa o ID FIDE ${idNoCadastro}.` }
+    return {
+      ok: false,
+      motivo: `O cadastro da CBX informa o ID FIDE ${idNoCadastro}.`,
+      divergente: true
+    }
   }
 
   // Sem a FIDE não há como confirmar gênero, federação e ratings: ficam nulos e

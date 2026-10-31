@@ -13,7 +13,7 @@ import type {
   LookupResult,
   OfficialPlayer,
 } from './types'
-import { formatCurrency, handleEnterBlur } from './utils'
+import { formatCurrency, consultarComPrazo, handleEnterBlur } from './utils'
 import { confirmarIdFidePelaCbx } from './confirmacao-cbx'
 import { verifyCbxId, verifyFideId } from './verify-player'
 
@@ -21,18 +21,44 @@ type IdKind = 'fide' | 'cbx'
 
 type IdState = {
   value: string
-  /** ID que foi conferido com sucesso nos site oficial. */
+  /** ID já conferido: confirmado por um site oficial ou liberado com aviso. */
   verifiedId: string
   player: OfficialPlayer | null
   error: string
   /** Aviso que não impede a inscrição (ex.: dados confirmados pela CBX). */
   warning: string
+  /** Consulta em andamento. */
+  loading: boolean
+  /**
+   * O site oficial não respondeu. Não é erro do jogador: a inscrição segue e o
+   * árbitro confere o ID na análise, então o formulário não fica travado.
+   */
+  unconfirmed: boolean
 }
 
-const emptyIdState: IdState = { value: '', verifiedId: '', player: null, error: '', warning: '' }
+const emptyIdState: IdState = {
+  value: '',
+  verifiedId: '',
+  player: null,
+  error: '',
+  warning: '',
+  loading: false,
+  unconfirmed: false,
+}
 
 const AVISO_CONFIRMADO_PELA_CBX =
   '*FIDE indisponível: dados confirmados pelo cadastro da CBX. Gênero e rating serão conferidos pelo árbitro.'
+
+/**
+ * A FIDE recusa conexão vinda de IP de datacenter — é o caso da Vercel, e não
+ * tem contorno do lado do servidor. Travar a inscrição por isso impede de se
+ * inscrever justamente quem tem o ID correto, então o jogador segue com aviso e
+ * o árbitro confere o número na análise (o envio já funcionava assim).
+ */
+const avisoSemConfirmacao = (site: string, motivo: string) =>
+  `*A ${site} não respondeu agora${
+    motivo ? ` (${motivo})` : ''
+  }. A organização vai conferir este ID na análise.`
 
 const idRules: Record<
   IdKind,
@@ -52,6 +78,49 @@ const idRules: Record<
 
 const initialState: InscriptionState = { status: 'idle' }
 const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png']
+
+/**
+ * Situação da consulta logo abaixo do campo. Sem isso o formulário fica mudo
+ * durante a consulta e o jogador não sabe se o ID foi aceito ou se travou.
+ */
+function StatusDoId({ state, onRetry }: { state: IdState; onRetry: () => void }) {
+  if (state.loading) return <p className="obs">Carregando...</p>
+
+  return (
+    <>
+      {state.error !== '' ? <p className="error">{state.error}</p> : ''}
+      {state.warning !== '' ? (
+        <p className="obs">
+          {state.warning}
+          {state.unconfirmed ? (
+            <>
+              {' '}
+              <button
+                type="button"
+                onClick={onRetry}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  font: 'inherit',
+                  color: 'inherit',
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                }}
+              >
+                Tentar novamente
+              </button>
+            </>
+          ) : (
+            ''
+          )}
+        </p>
+      ) : (
+        ''
+      )}
+    </>
+  )
+}
 
 export default function InscriptionForm() {
   const tournament = useContext(TournamentContext)
@@ -102,18 +171,27 @@ export default function InscriptionForm() {
   function confirmarFidePelaCbx(jogadorCbx: OfficialPlayer) {
     const fideAtual = idsAtuais.current.fide
 
-    // Só quando a consulta da FIDE já falhou. Se ela nem foi tentada, o jogador
-    // ainda pode ter o dado confirmado pelo próprio site da FIDE.
-    if (fideAtual.value === '' || fideAtual.player !== null || fideAtual.error === '') return
+    // Só quando a consulta da FIDE já terminou sem confirmação. Se ela ainda
+    // nem foi tentada (ou está em andamento), o jogador pode ter o dado
+    // confirmado pelo próprio site da FIDE.
+    const fideFalhou = fideAtual.unconfirmed || fideAtual.error !== ''
+
+    if (fideAtual.value === '' || fideAtual.player !== null || fideAtual.loading) return
+    if (!fideFalhou) return
 
     const confirmacao = confirmarIdFidePelaCbx(fideAtual.value, jogadorCbx)
 
     if (!confirmacao.ok) {
-      // O cadastro da CBX aponta outro ID: o aviso ajuda mais que o erro genérico.
+      // O cadastro da CBX aponta outro ID: isso é erro de digitação, e o aviso
+      // ajuda mais que o erro genérico. Quando a CBX só não tem a informação,
+      // o aviso que já está na tela continua valendo.
+      if (!confirmacao.divergente) return
+
       setFide({
         ...fideAtual,
         error: `*Não foi possível consultar a FIDE agora. ${confirmacao.motivo}`,
         warning: '',
+        unconfirmed: false,
       })
       return
     }
@@ -124,16 +202,22 @@ export default function InscriptionForm() {
       player: confirmacao.player,
       error: '',
       warning: AVISO_CONFIRMADO_PELA_CBX,
+      loading: false,
+      unconfirmed: false,
     })
   }
 
-  async function checkId(kind: IdKind) {
+  async function checkId(kind: IdKind, forcar = false) {
     const rule = idRules[kind]
     const current = kind === 'fide' ? fide : cbx
     const update = kind === 'fide' ? setFide : setCbx
     const id = current.value.trim()
 
-    if (id === '' || current.verifiedId === id) return
+    if (id === '' || current.loading) return
+
+    // Já conferido: não repete a consulta a cada perda de foco. O botão
+    // "Tentar novamente" chama com forcar = true.
+    if (!forcar && current.verifiedId === id) return
 
     if (!rule.isValid(id)) {
       update((latest) => ({
@@ -142,17 +226,27 @@ export default function InscriptionForm() {
         player: null,
         error: '*Insira um ID válido',
         warning: '',
+        loading: false,
+        unconfirmed: false,
       }))
       return
     }
 
     const ticket = ++lookupTickets.current[kind]
-    update((latest) => ({ ...latest, verifiedId: '', player: null, error: '', warning: '' }))
+    update((latest) => ({
+      ...latest,
+      verifiedId: '',
+      player: null,
+      error: '',
+      warning: '',
+      loading: true,
+      unconfirmed: false,
+    }))
 
     let result: LookupResult
 
     try {
-      result = await rule.lookup(id)
+      result = await consultarComPrazo(id, rule.lookup)
     } catch (error) {
       // Falha de transporte (função na Vercel interrompida, sem rede...) não pode
       // deixar o formulário travado: vira um aviso e o jogador pode tentar de novo.
@@ -171,12 +265,32 @@ export default function InscriptionForm() {
       if (latest.value.trim() !== id) return latest
 
       if (result.status === 'found') {
-        return { ...latest, verifiedId: id, player: result.player, error: '', warning: '' }
+        return {
+          ...latest,
+          verifiedId: id,
+          player: result.player,
+          error: '',
+          warning: '',
+          loading: false,
+          unconfirmed: false,
+        }
+      }
+
+      if (result.status === 'not-found') {
+        return {
+          ...latest,
+          verifiedId: '',
+          player: null,
+          error: `*Usuário ${rule.label} não encontrado`,
+          warning: '',
+          loading: false,
+          unconfirmed: false,
+        }
       }
 
       // A FIDE não respondeu: se o cadastro da CBX confirma o ID digitado, a
-      // inscrição segue em vez de ficar presa esperando o site oficial voltar.
-      if (kind === 'fide' && result.status === 'unavailable') {
+      // inscrição segue com os dados dela em vez de ficar presa.
+      if (kind === 'fide') {
         const jogadorCbx = idsAtuais.current.cbx.player
         const confirmacao = jogadorCbx ? confirmarIdFidePelaCbx(id, jogadorCbx) : null
 
@@ -187,15 +301,19 @@ export default function InscriptionForm() {
             player: confirmacao.player,
             error: '',
             warning: AVISO_CONFIRMADO_PELA_CBX,
+            loading: false,
+            unconfirmed: false,
           }
         }
 
-        if (confirmacao) {
+        if (confirmacao?.divergente) {
           return {
             ...latest,
             verifiedId: '',
             player: null,
             warning: '',
+            loading: false,
+            unconfirmed: false,
             error: `*Não foi possível consultar a FIDE agora${
               result.motivo ? ` (${result.motivo})` : ''
             }. ${confirmacao.motivo}`,
@@ -203,24 +321,25 @@ export default function InscriptionForm() {
         }
       }
 
+      // Nenhum site oficial confirmou. O motivo vem do servidor para o jogador
+      // (e o suporte) saber se o site recusou, demorou ou está fora do ar.
       return {
         ...latest,
-        verifiedId: '',
+        verifiedId: id,
         player: null,
-        warning: '',
-        error:
-          result.status === 'not-found'
-            ? `*Usuário ${rule.label} não encontrado`
-            : // O motivo vem do servidor: sem ele o jogador (e o suporte) não tem
-              // como saber se o site oficial recusou, demorou ou está fora do ar.
-              `*Não foi possível consultar a ${rule.label} agora${
-                result.motivo ? ` (${result.motivo})` : ''
-              }. Tente novamente.`,
+        error: '',
+        warning: avisoSemConfirmacao(rule.label, result.motivo ?? ''),
+        loading: false,
+        unconfirmed: true,
       }
     })
   }
 
-  const idsBlocked = hasIds && (!playerFide || !playerCbx || fide.error !== '' || cbx.error !== '')
+  /** Um ID digitado e já resolvido (confirmado nos sites oficiais ou liberado com aviso). */
+  const idPreenchido = (state: IdState) =>
+    state.value !== '' && state.error === '' && !state.loading
+  const idsBlocked = hasIds && !(idPreenchido(fide) && idPreenchido(cbx))
+  const consultando = hasIds && (fide.loading || cbx.loading)
 
   // ---- Conferência do nome / data / gênero com os dados oficiais ----
   const nameError = useMemo(() => {
@@ -345,8 +464,7 @@ export default function InscriptionForm() {
                 onBlur={() => checkId('fide')}
                 onKeyDown={handleEnterBlur}
               />
-              {fide.error !== '' ? <p className="error">{fide.error}</p> : ''}
-              {fide.warning !== '' ? <p className="obs">{fide.warning}</p> : ''}
+              <StatusDoId state={fide} onRetry={() => checkId('fide', true)} />
             </div>
             <input
               type="text"
@@ -369,7 +487,7 @@ export default function InscriptionForm() {
                 onBlur={() => checkId('cbx')}
                 onKeyDown={handleEnterBlur}
               />
-              {cbx.error !== '' ? <p className="error">{cbx.error}</p> : ''}
+              <StatusDoId state={cbx} onRetry={() => checkId('cbx', true)} />
             </div>
             <input
               type="text"
@@ -383,7 +501,15 @@ export default function InscriptionForm() {
           ''
         )}
 
-        {idsBlocked ? <p className="error">*Preencha os campos acima antes de continuar</p> : ''}
+        {idsBlocked ? (
+          <p className="error">
+            {consultando
+              ? '*Consultando os sites oficiais, aguarde...'
+              : '*Preencha os campos acima antes de continuar'}
+          </p>
+        ) : (
+          ''
+        )}
 
         <div className={`form ${idsBlocked ? 'disableDiv' : ''}`} style={{ width: '100%' }}>
           <PlayerFields

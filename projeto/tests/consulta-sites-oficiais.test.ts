@@ -88,12 +88,32 @@ describe('verifyFideId', () => {
     })
 
     it('devolve o motivo da falha quando todas as tentativas falham', async () => {
-        fetchMock.mockResolvedValue(resposta('', 403))
+        fetchMock.mockResolvedValue(resposta('', 503))
 
         const resultado = await verifyFideId('44731736')
 
-        expect(resultado).toEqual({ status: 'unavailable', motivo: 'HTTP 403' })
+        expect(resultado).toEqual({ status: 'unavailable', motivo: 'HTTP 503' })
         expect(fetchMock).toHaveBeenCalledTimes(2)
+    })
+
+    it('não repete quando o site não responde (conexão descartada)', async () => {
+        // É o caso da FIDE com IP de datacenter: a conexão fica pendurada. Repetir
+        // dobraria a espera do jogador sem chance de dar certo.
+        fetchMock.mockImplementation(
+            (_url: string, opcoes: { signal: AbortSignal }) =>
+                new Promise((_resolve, reject) => {
+                    opcoes.signal.addEventListener('abort', () => {
+                        const erro = new Error('The operation was aborted due to timeout')
+                        erro.name = 'TimeoutError'
+                        reject(erro)
+                    })
+                })
+        )
+
+        const resultado = await verifyFideId('44731736', { prazoMs: 1500 })
+
+        expect(resultado).toEqual({ status: 'unavailable', motivo: 'tempo esgotado' })
+        expect(fetchMock).toHaveBeenCalledTimes(1)
     })
 
     it('resume o erro de rede em vez de deixar o formulário sem explicação', async () => {
