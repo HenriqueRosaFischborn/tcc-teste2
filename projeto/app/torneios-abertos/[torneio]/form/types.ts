@@ -27,7 +27,8 @@ export type OfficialPlayer = {
 export type LookupResult =
   | { status: 'found'; player: OfficialPlayer }
   | { status: 'not-found' }
-  | { status: 'unavailable' }
+  /** `motivo` é o que o site oficial devolveu (HTTP, tempo esgotado...), para o aviso não ficar sem explicação. */
+  | { status: 'unavailable'; motivo?: string }
 
 export type Category = {
   uuid: string
