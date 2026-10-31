@@ -88,7 +88,7 @@ export default async function addTournmentForm(prev: NewTournment, formdata: For
         const supabaseAdmin = await getSupabaseAdmin()
         const {error} = await supabaseAdmin.storage.from('publics').upload(fileRegPath, fileReg, {
             upsert: true,
-            contentType: fileFolder.type
+            contentType: fileReg.type
         })
     }
 
@@ -98,7 +98,7 @@ export default async function addTournmentForm(prev: NewTournment, formdata: For
         const supabaseAdmin = await getSupabaseAdmin()
         const {error} = await supabaseAdmin.storage.from('publics').upload(fileQrPath, fileQr, {
             upsert: true,
-            contentType: fileFolder.type
+            contentType: fileQr.type
         })
     }
 

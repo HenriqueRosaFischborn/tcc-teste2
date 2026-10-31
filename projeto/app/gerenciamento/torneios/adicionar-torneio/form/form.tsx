@@ -523,8 +523,8 @@ export default function AddTournmentForm({times}: {times?: {time: number, plus: 
                 <div className='buttons'>
                     <div id='qr-area' className='upload-file'>
                         
-                        <button onClick={() => document.getElementById('input-qr')?.click()} type='button' className='button red'>Anexar QR Code <span style={{fontSize: '10pt'}}>(.jpg / .jpeg / .png)</span></button>
-                        <input onChange={(e) => uploadFile(e.currentTarget.value, true)} type='file' id='input-qr' name='fileQr' accept='.jpg,.jpeg,.png' hidden={true}/>     
+                        <button onClick={() => document.getElementById('input-qr')?.click()} type='button' className='button red'>Anexar QR Code</button>
+                        <input onChange={(e) => uploadFile(e.currentTarget.value, true)} type='file' id='input-qr' name='fileQr' accept='image/*' hidden={true}/>
                     
                         <div style={{flex: 1}}>
                             <h3>Chave Pix:</h3>
@@ -538,11 +538,11 @@ export default function AddTournmentForm({times}: {times?: {time: number, plus: 
                     </div>
 
                     <div className='upload-file'>
-                        <button onClick={() => document.getElementById('input-folder')?.click()} type='button' className='button red'>Anexar folder <span style={{fontSize: '10pt'}}>(.jpg / .jpeg / .png)</span></button>
+                        <button onClick={() => document.getElementById('input-folder')?.click()} type='button' className='button red'>Anexar folder</button>
                         {nameFolder != '' ? (
                             <p>({nameFolder})</p>
                         ) : ('')}
-                        <input onChange={(e) => uploadFile(e.currentTarget.value)} type='file' id='input-folder' name='fileFolder' accept='.jpg,.jpeg,.png' hidden={true}/>
+                        <input onChange={(e) => uploadFile(e.currentTarget.value)} type='file' id='input-folder' name='fileFolder' accept='image/*' hidden={true}/>
                     </div>
 
                     <div className='upload-file'>
