@@ -124,6 +124,34 @@ describe('verifyFideId', () => {
         expect(resultado.status).toBe('unavailable')
         expect(resultado).toMatchObject({ motivo: 'getaddrinfo ENOTFOUND ratings.fide.com' })
     })
+
+    /** A FIDE escreve o título por extenso; o sistema guarda a abreviação. */
+    const paginaComTitulo = (titulo: string) => `
+<html><body>
+  <div class="player-title">Nunes, Agatha Hurba</div>
+  <div class="profile-info-byear">1999</div>
+  <div class="profile-info-sex">Female</div>
+  <div class="profile-info-row "><h5>FIDE title</h5><div class="profile-info-title "><p>${titulo}</p></div></div>
+  <div class="profile-games">1899 1935 1941</div>
+</body></html>`
+
+    it.each([
+        ['Woman FIDE Master', 'WFM'],
+        ['Woman Grandmaster', 'WGM'],
+        ['Woman International Master', 'WIM'],
+        ['Woman Candidate Master', 'WCM'],
+        ['Grandmaster', 'GM'],
+        ['International Master', 'IM'],
+        ['FIDE Master', 'FM'],
+        ['Candidate Master', 'CM'],
+        ['None', null],
+    ])('abrevia o título "%s" como %s', async (extenso, esperado) => {
+        fetchMock.mockResolvedValueOnce(resposta(paginaComTitulo(extenso)))
+
+        const resultado = await verifyFideId('2114852')
+
+        expect(resultado).toMatchObject({ status: 'found', player: { title: esperado } })
+    })
 })
 
 describe('verifyFideId com proxy de saída', () => {

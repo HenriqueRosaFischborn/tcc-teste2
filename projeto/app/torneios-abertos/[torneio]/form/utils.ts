@@ -16,6 +16,26 @@ export function handleEnterBlur(event: React.KeyboardEvent<HTMLInputElement>) {
 }
 
 /**
+ * Traduz a falha de transporte em algo que o jogador consiga resolver.
+ *
+ * O caso mais comum na versão publicada não é o site oficial cair: é a aba do
+ * navegador ter sido aberta antes do último deploy. O Next.js chama a server
+ * action por um hash que muda a cada build, então a página velha pede uma ação
+ * que não existe mais e recebe "Server Action ... was not found on the server".
+ * Recarregar resolve — e é isso que o aviso precisa dizer, em vez do texto
+ * técnico do framework.
+ */
+export function motivoDaFalha(error: unknown): string {
+  const mensagem = error instanceof Error ? error.message : String(error)
+
+  if (/server action/i.test(mensagem) || /not found on the server/i.test(mensagem)) {
+    return 'página desatualizada — recarregue com Ctrl+Shift+R'
+  }
+
+  return mensagem.slice(0, 120) || 'falha ao chamar o servidor'
+}
+
+/**
  * Prazo do lado do navegador. O servidor já desiste em 8 s, mas se a função na
  * Vercel for encerrada no meio da resposta a requisição nunca termina e o
  * formulário fica carregando para sempre. Este limite garante que o jogador

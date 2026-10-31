@@ -10,7 +10,7 @@ import { TournamentContext } from "@/lib/context";
 import { validarComprovante } from "@/lib/comprovante";
 import { verifyCbxId, verifyFideId } from "@/app/torneios-abertos/[torneio]/form/verify-player";
 import type { LookupResult, OfficialPlayer } from "@/app/torneios-abertos/[torneio]/form/types";
-import { consultarComPrazo, handleEnterBlur } from "@/app/torneios-abertos/[torneio]/form/utils";
+import { consultarComPrazo, handleEnterBlur, motivoDaFalha } from "@/app/torneios-abertos/[torneio]/form/utils";
 
 /**
  * Chama a consulta oficial sem deixar a tela travada: falha de transporte
@@ -24,10 +24,7 @@ async function consultar(
     try {
         return await consultarComPrazo(id, buscar)
     } catch (error) {
-        return {
-            status: 'unavailable',
-            motivo: error instanceof Error ? error.message.slice(0, 120) : 'falha ao chamar o servidor',
-        }
+        return { status: 'unavailable', motivo: motivoDaFalha(error) }
     }
 }
 

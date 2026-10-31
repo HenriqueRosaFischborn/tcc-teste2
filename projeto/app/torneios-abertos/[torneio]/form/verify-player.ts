@@ -154,6 +154,31 @@ const toRating = (value: string | undefined): number | null => {
   return Number.isFinite(rating) && rating > 0 ? rating : null
 }
 
+/**
+ * A FIDE escreve o título por extenso ("Woman FIDE Master") e o sistema guarda
+ * a abreviação oficial. Antes a consulta pegava só a primeira palavra e gravava
+ * "Woman" em vez de "WFM".
+ */
+const TITULOS: Record<string, string> = {
+  grandmaster: 'GM',
+  'international master': 'IM',
+  'fide master': 'FM',
+  'candidate master': 'CM',
+  'woman grandmaster': 'WGM',
+  'woman international master': 'WIM',
+  'woman fide master': 'WFM',
+  'woman candidate master': 'WCM',
+}
+
+/** Devolve a abreviação, ou o texto como veio se a FIDE usar um título novo. */
+const abreviarTitulo = (texto: string): string | null => {
+  const nome = texto.replace(/\s+/g, ' ').trim()
+
+  if (nome === '' || nome.toLowerCase() === 'none') return null
+
+  return TITULOS[nome.toLowerCase()] ?? nome
+}
+
 /** Texto do primeiro elemento que casar com algum dos seletores. */
 const primeiroTexto = ($: cheerio.CheerioAPI, seletores: string): string => {
   for (const seletor of seletores.split(',')) {
@@ -213,9 +238,16 @@ export async function verifyFideId(
     ?.replace('.svg', '')
     .toUpperCase()
 
-  const rawTitle = $('.profile-info-row')
-    .text()
-    .match(/FIDE title\s*([A-Za-z]+)/i)?.[1]
+  // O título fica em ".profile-info-title" (por extenso). O fallback lê a linha
+  // "FIDE title" caso a classe mude.
+  const textoDoTitulo =
+    primeiroTexto($, '.profile-info-title') ||
+    $('.profile-info-row')
+      .filter((_, linha) => /fide title/i.test($(linha).text()))
+      .first()
+      .text()
+      .replace(/fide title/i, '')
+      .trim()
 
   return {
     status: 'found',
@@ -223,7 +255,7 @@ export async function verifyFideId(
       name,
       bornYear: $('.profile-info-byear').text().trim(),
       genre: $('.profile-info-sex').text().trim() === 'Male' ? 'm' : 'f',
-      title: rawTitle && rawTitle.toLowerCase() !== 'none' ? rawTitle : null,
+      title: abreviarTitulo(textoDoTitulo),
       federation: flagCode ? (countries.alpha2ToAlpha3(flagCode) ?? null) : null,
       idFide: id,
       ratings: {

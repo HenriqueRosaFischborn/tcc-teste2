@@ -14,7 +14,7 @@ import type {
   LookupResult,
   OfficialPlayer,
 } from './types'
-import { formatCurrency, consultarComPrazo, handleEnterBlur } from './utils'
+import { formatCurrency, consultarComPrazo, handleEnterBlur, motivoDaFalha } from './utils'
 import { confirmarIdFidePelaCbx } from './confirmacao-cbx'
 import { verifyCbxId } from './verify-player'
 
@@ -148,12 +148,10 @@ export default function InscriptionForm() {
     try {
       result = await consultarComPrazo(id, verifyCbxId)
     } catch (error) {
-      // Falha de transporte (função na Vercel interrompida, sem rede...) não pode
-      // deixar o formulário travado: vira um aviso e o jogador pode tentar de novo.
-      result = {
-        status: 'unavailable',
-        motivo: error instanceof Error ? error.message.slice(0, 120) : 'falha ao chamar o servidor',
-      }
+      // Falha de transporte (função na Vercel interrompida, sem rede, aba de um
+      // deploy anterior...) não pode deixar o formulário travado: vira um aviso
+      // e o jogador pode tentar de novo.
+      result = { status: 'unavailable', motivo: motivoDaFalha(error) }
     }
 
     if (ticket !== consultaAtual.current) return
