@@ -19,7 +19,7 @@ export default function Footer({user, admin}: {user: boolean, admin: boolean}) {
                         <Menu user={user} admin={admin}/>
                     </div>
 
-                    <div id="footer-menu-cell">
+                    <div  id="footer-menu-cell">
                         <Menu user={user} admin={admin}/>
                     </div>
 

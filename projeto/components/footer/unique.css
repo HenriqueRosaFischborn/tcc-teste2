@@ -18,10 +18,14 @@ footer img {
     object-fit: contain;
 }
 
+#footer-content {
+    align-items: start;
+}
+
 footer nav {
     flex-direction: column;
     gap: 10px;
-    justify-content: right;
+    justify-content: center;
     align-items: start;
 }
 

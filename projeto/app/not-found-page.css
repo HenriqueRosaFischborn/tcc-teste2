@@ -1,0 +1,84 @@
+/* Estilos da tela de 404.
+   O arquivo não se chama "not-found.css" de propósito: o Turbopack gera um
+   chunk com o mesmo nome do arquivo e o do entry da rota, e as regras acabam
+   não indo para o CSS servido. Mantenha um nome diferente. */
+
+/* Centraliza o conteúdo no espaço que sobra entre o header e o footer. */
+#not-found {
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 18px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 70px 20px;
+    text-align: center;
+}
+
+/* Logo do clube no lugar do antigo "404". */
+#not-found img {
+    display: block;
+    width: 190px;
+    height: auto;
+}
+
+#not-found h1 {
+    /* O h1 global é 30pt; aqui a logo já faz o papel de destaque. */
+    font-size: 26pt;
+    text-wrap: balance;
+}
+
+#nf-text {
+    max-width: 520px;
+    margin: 0;
+    font-size: 13pt;
+    line-height: 1.6;
+    color: var(--mainblack);
+}
+
+/* Chamada principal, centralizada como nas outras páginas. */
+#nf-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 12px;
+}
+
+#not-found .button {
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    #not-found {
+        gap: 14px;
+        padding: 40px 20px;
+    }
+
+    #not-found h1 {
+        font-size: 21pt;
+    }
+
+    #not-found img {
+        width: 140px;
+    }
+
+    #nf-text {
+        font-size: 12pt;
+    }
+
+    /* No celular o botão ocupa a largura da tela, para ser fácil de tocar. */
+    #nf-actions {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        gap: 12px;
+    }
+
+    #not-found .button {
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+}
