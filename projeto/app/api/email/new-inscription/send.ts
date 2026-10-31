@@ -1,4 +1,11 @@
-'use server'
+// Módulo interno de envio — NÃO é Server Action.
+//
+// O `'use server'` foi removido de propósito: com ele, este export virava um
+// endpoint POST público capaz de disparar e-mail para os organizadores do
+// torneio com dados escolhidos por quem chamasse.
+//
+// Quem dispara é `submitInscription`, que já é uma Server Action e monta os
+// dados a partir do banco. Só deve ser importado por código de servidor.
 
 import db from '@/lib/db';
 import { Player } from '@/lib/types';

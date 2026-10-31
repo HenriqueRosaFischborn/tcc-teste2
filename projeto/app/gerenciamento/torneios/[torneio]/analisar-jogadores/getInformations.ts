@@ -65,6 +65,7 @@
 //     return data
 // }
 
+import { requireAdmin } from "@/lib/auth-guard"
 import db from "@/lib/db"
 
 function convertBigIntToNumber(obj: any): any {
@@ -94,6 +95,9 @@ function convertBigIntToNumber(obj: any): any {
 }
 
 export async function getplayers(id: number) {
+    // Dados pessoais de todos os inscritos: só administrador.
+    await requireAdmin()
+
     const players = await db.incricao.findMany({
         where: {
             id_torneio: id
@@ -129,6 +133,8 @@ export async function getplayers(id: number) {
 }
 
 export async function getCategories(id: number) {
+    await requireAdmin()
+
     const data = await db.categoria.findMany({
         where: {
             id_torneio: id
@@ -144,6 +150,8 @@ export async function getCategories(id: number) {
 }
 
 export async function getDivisons(id: number) {
+    await requireAdmin()
+
     const data = await db.divisoes.findMany({
         where: {
             id_torneio: id

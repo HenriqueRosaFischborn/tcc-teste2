@@ -15,8 +15,8 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
             <div id='login-content'>
                 <Logo width='180' />
                 <h1>Entrar</h1>
+                <GoogleSignIn urlBack={urlBack} label='Entrar com Google' dividerPosition='below' />
                 <LoginForm />
-                <GoogleSignIn urlBack={urlBack} label='Entrar com Google' />
                 <p className='auth-alt'>
                     <strong>Não possui uma conta? <a href="/cadastro">Cadastre-se</a></strong>
                 </p>

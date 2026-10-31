@@ -7,6 +7,7 @@ import { Cat, Div, Player } from '@/lib/types'
 import Form from 'next/form'
 import { useActionState, useEffect, useState } from 'react'
 import updateDataBase from './updateDataBase'
+import { converterValor, valorDoGenero } from './converter-valor'
 import { generateTXT } from './generateTXT'
 
 type Inscricoes = {
@@ -82,8 +83,7 @@ export default function BodyClient({nameTournment, players, comprovantes, catego
         }
 
         setNowInscri(prev => {
-            const newValue = type === 'string' ? value : type === 'date' ? '' : type === 'boolean' ? Boolean(value) : Number(value)
-            console.log(newValue)
+            const newValue = converterValor(type, value)
             const updatedPlayer = {
                 ...prev[uuid],
                 [collumn]: type === 'date' ? dateValue : newValue
@@ -239,7 +239,7 @@ export default function BodyClient({nameTournment, players, comprovantes, catego
                                         </td>
                                         
                                         <td className='select' style={{backgroundColor: nowInscri[el.uuid]?.genre !== defaultInscri[el.uuid]?.genre ? 'var(--ligthgray)' : ''}}>
-                                            <select name="" id="" defaultValue={el.genre ? 'true' : 'false'} onChange={(e) => {updateObjNowSelect(el.uuid, 'genre', e.currentTarget.value, 'boolean')}}>
+                                            <select name="" id="" defaultValue={valorDoGenero(el.genre)} onChange={(e) => {updateObjNowSelect(el.uuid, 'genre', e.currentTarget.value, 'boolean')}}>
                                                 <option value={'true'}>Masculino</option>
                                                 <option value={'false'}>Feminino</option>
                                             </select>

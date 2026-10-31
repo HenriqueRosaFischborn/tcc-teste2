@@ -5,9 +5,8 @@ import {useActionState, useContext, useEffect, useState } from "react";
 import Fields from "./fields";
 import actionInscriIndividual from "./action";
 import Form from "next/form";
-import { FormState, Player } from "@/lib/types";
+import { FormState } from "@/lib/types";
 import { searchCbx, searchFide } from "./searchID";
-import { supabase } from "@/lib/supabaseClient";
 import { TournamentContext } from "@/lib/context";
 
 type DataPlayer = {
@@ -312,9 +311,17 @@ export default function FormEditInscriIndividual() {
                                     <p className="error">*Obs.: Preencha as informações (inclusive nome) exatamente como são demonstradas oficialmente na FIDE</p>
                                     <a href={`https://ratings.fide.com/profile/${state.values[0].idfide}`} target="_blank" className="fide-link">Ver meu perfil FIDE</a> </p> 
                                 : ('') } */}
-                                {state.message && state.values && state.message.includes('Você já está inscrito') ? 
-                                    <p className="error pErr">Este ID FIDE já está inscrito</p>
-                                : ('') } 
+                                {state.message && state.values && state.message.includes('Você já está inscrito') ?
+                                    <p className="error pErr">Este jogador já está inscrito neste torneio (mesmo ID FIDE ou CBX)</p>
+                                : ('') }
+                                {/* Recusas das regras de inscrição (T15/T17): categoria de
+                                    outro torneio, gênero incompatível, idade fora da
+                                    categoria. Sem isto a recusa não aparecia. */}
+                                {state.message && state.values
+                                    && !['Sucesso', 'erro', 'error-info-id'].includes(state.message[0])
+                                    && !state.message.includes('Você já está inscrito') ? (
+                                    <p className="error pErr">{state.message[0]}</p>
+                                ) : ('') }
                             </div>
                         </div>
                     </Form>

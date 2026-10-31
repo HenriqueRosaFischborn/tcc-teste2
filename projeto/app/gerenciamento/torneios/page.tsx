@@ -1,6 +1,7 @@
 import './unique.css'
 import './responsive.css'
 import { getSupabaseAdmin } from '@/lib/supabase'
+import { requireAdmin } from '@/lib/auth-guard'
 import db from '@/lib/db'
 import Form from 'next/form'
 import { deleteTournment } from './[torneio]/deletar-jogadores/action'
@@ -25,6 +26,11 @@ type Tournment = {
 
 
 export default async function Tournments() {
+    // Rota administrativa: o `proxy.ts` só enxerga a flag `admin` do JWT, que
+    // fica congelada por até 30 dias. A checagem que vale é esta, que relê o
+    // banco. Precisa vir antes de qualquer consulta.
+    await requireAdmin()
+
     const tournments = await db.torneio.findMany(
         {
         // where: {id: 1},

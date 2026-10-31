@@ -4,7 +4,8 @@ import { FormState } from "@/lib/types"
 import Form from "next/form"
 import { useActionState, useEffect, useState } from "react"
 import loginAction from "./action"
-import verifyEmailForgotPassword from "./verify-forgot-password"
+
+import { verifyEmail } from "../../cadastro/form/verify-types"
 import { useSearchParams } from "next/navigation"
 
 /**
@@ -65,12 +66,13 @@ export default function LoginForm() {
 
             const email = emailInput.value.trim()
 
+            // Só o FORMATO é conferido aqui. Dizer "este e-mail não existe"
+            // entregaria a quem tentasse quais contas estão cadastradas — a
+            // resposta é a mesma para todos.
+            const formatoValido = await verifyEmail(email)
 
-
-            const verify = await verifyEmailForgotPassword(email)
-
-            if (verify) {
-                setEmailError('*Este não é um email válido ou de usuário existente')
+            if (!formatoValido) {
+                setEmailError('*Este não é um email válido')
             } else {
                 setEmailError('')
                 window.location.href = `/esqueci-minha-senha?email=${encodeURIComponent(email)}`

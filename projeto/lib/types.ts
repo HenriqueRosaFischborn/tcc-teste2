@@ -1,6 +1,6 @@
-'use server'
-
-import { UUID } from "crypto"
+// Arquivo só de tipos: consumido por Server e Client Components, então não leva
+// `'use server'` (que transformaria cada export em endpoint público) nem
+// `server-only` (que impediria o import no cliente).
 
 export type FormState = {
     message?: string[]

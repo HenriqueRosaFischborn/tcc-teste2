@@ -4,6 +4,7 @@ import AddTournmentForm from './form/form'
 import getTimes from './getTimes'
 import redirectTournment from '@/app/torneios-abertos/[torneio]/redirect'
 import { redirect } from 'next/navigation'
+import { requireAdmin } from '@/lib/auth-guard'
 import db from '@/lib/db'
 
 type Categorie = {
@@ -26,7 +27,11 @@ type Division = {
 }
 
 export default async function EditTournment({params}: {params: Promise<{ torneio: string }>}) {
-    
+
+    // Rota administrativa: a guarda relê o banco e vem antes de qualquer
+    // consulta. O `proxy.ts` só enxerga a flag `admin` do JWT.
+    await requireAdmin()
+
     const {torneio} = await params
     
     const tournment = await redirectTournment(torneio)

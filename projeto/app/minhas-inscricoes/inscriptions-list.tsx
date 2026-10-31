@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import ButtonCancelSolicitation from './buttonCancelSolicitation'
-import { Player } from '@/lib/types'
 
 export type InscriptionItem = {
     uuid: string
@@ -23,7 +22,6 @@ export type InscriptionItem = {
     categoryName: string
     categoryValue: string
     imageUrl: string | null
-    player: Player
 }
 
 /** O banco chama de "Recusada", mas para o atleta o que aconteceu é um cancelamento. */
@@ -108,11 +106,7 @@ function InscriptionCard({ item }: { item: InscriptionItem }) {
                                 >
                                     Editar informações
                                 </Link>
-                                <ButtonCancelSolicitation
-                                    torneioID={item.tournamentId}
-                                    inscricao={item.player}
-                                    torneio={item.tournamentTitle}
-                                />
+                                <ButtonCancelSolicitation inscricaoUuid={item.uuid} />
                             </div>
                         </>
                     )}

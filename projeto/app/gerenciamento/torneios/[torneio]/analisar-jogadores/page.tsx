@@ -7,8 +7,14 @@ import './responsive.css'
 import classifyTime from "@/lib/classifyTime";
 import {getCategories, getDivisons, getplayers} from "./getInformations";
 import { Cat, Div, Player } from "@/lib/types";
+import { requireAdmin } from "@/lib/auth-guard";
 
 export default async function Players({params}: {params: Promise<{ torneio: string }>}) {
+    // Rota administrativa: a guarda relê o banco e vem antes de qualquer
+    // consulta ou chamada ao Storage. O `proxy.ts` só enxerga a flag `admin`
+    // do JWT, que fica congelada por até 30 dias.
+    await requireAdmin()
+
     const {torneio} = await params
     
     const tournment = await redirectTournment(torneio)

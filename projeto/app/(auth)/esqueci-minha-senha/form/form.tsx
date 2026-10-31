@@ -1,44 +1,38 @@
 'use client'
 
 import Logo from "@/components/ui/logo"
+import Form from "next/form"
 import { useSearchParams } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import sendEmailAction from "./action"
 
-
+/**
+ * Solicitação de redefinição de senha.
+ *
+ * O envio depende do clique em "Enviar" — antes a página disparava o e-mail só
+ * de ser aberta (um GET com `?email=` bastava para inundar a caixa de alguém).
+ *
+ * A resposta é sempre a mesma frase, exista ou não a conta: é o que impede usar
+ * esta tela para descobrir quem tem cadastro.
+ */
 export default function ResetPassword() {
     const params = useSearchParams()
-    const email = (params.get('email') ?? '').replace(/"/g, '').trim()
+    const emailInicial = (params.get('email') ?? '').replace(/"/g, '').trim()
 
-    const [emailError, setMailError] = useState(false)
-    const [message, setMessage] = useState(false)
+    const [email, setEmail] = useState(emailInicial)
+    const [enviado, setEnviado] = useState(false)
+    const [enviando, setEnviando] = useState(false)
 
-    useEffect(() => {
-        // Sem email não há o que enviar; evita o disparo em dobro que o estado
-        // anterior provocava a cada nova renderização.
-        if (!email) {
-            setMailError(true)
-            setMessage(true)
-            return
+    async function enviar(formdata: FormData) {
+        setEnviando(true)
+
+        try {
+            await sendEmailAction(String(formdata.get('email') ?? ''))
+        } finally {
+            setEnviando(false)
+            setEnviado(true)
         }
-
-        let active = true
-
-        async function action() {
-            const res = await sendEmailAction(email)
-
-            if (active) {
-                setMailError(!res)
-                setMessage(true)
-            }
-        }
-
-        action()
-
-        return () => {
-            active = false
-        }
-    }, [email])
+    }
 
     return (
         <>
@@ -48,21 +42,45 @@ export default function ResetPassword() {
                 <p className='obs' style={{textAlign: 'center', fontSize: '11pt'}}>
                     Quem criou a conta pelo Google ainda não tem senha: este é o caminho para definir uma.
                 </p>
-                <div className='form'>
-                    <div style={{width: '100%'}}>
-                        <p style={{textAlign: 'center'}} hidden={emailError || !message}>
-                            <strong>Um email para redefinição de senha foi enviado para: </strong> <br />
-                            <strong style={{color: 'var(--mainred)'}}>{email}</strong>
-                        </p>
-                        <p style={{textAlign: 'center'}} hidden={!emailError || !message}>
-                            <strong>Email de usuário inválido</strong>
-                        </p>
 
-                        <p style={{textAlign: 'center'}} className='auth-alt' hidden={!message}>
+                {enviado ? (
+                    <div className='form'>
+                        <div style={{width: '100%'}}>
+                            <p style={{textAlign: 'center'}}>
+                                <strong>Se este e-mail estiver cadastrado, enviaremos as instruções para redefinir a senha.</strong>
+                            </p>
+                            <p style={{textAlign: 'center'}} className='obs'>
+                                Confira também a caixa de spam. O link vale por 30 minutos.
+                            </p>
+                            <p style={{textAlign: 'center'}} className='auth-alt'>
+                                <a href="/entrar">Voltar para o login</a>
+                            </p>
+                        </div>
+                    </div>
+                ) : (
+                    <Form action={enviar} className='form'>
+                        <div style={{width: '100%'}}>
+                            <label htmlFor="email">Email da conta:</label>
+                            <input
+                                id="email"
+                                type="email"
+                                name="email"
+                                autoComplete="email"
+                                required
+                                value={email}
+                                onChange={(e) => setEmail(e.currentTarget.value)}
+                            />
+                        </div>
+
+                        <button type="submit" className='button red' disabled={enviando}>
+                            {enviando ? 'Enviando...' : 'Enviar instruções'}
+                        </button>
+
+                        <p style={{textAlign: 'center'}} className='auth-alt'>
                             <a href="/entrar">Voltar para o login</a>
                         </p>
-                    </div>
-                </div>
+                    </Form>
+                )}
             </div>
         </>
     )

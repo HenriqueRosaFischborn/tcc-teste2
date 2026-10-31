@@ -1,4 +1,6 @@
-'use server'
+// Função pura usada por Server Components e por Server Actions.
+// Não deve ser `'use server'`: isso a transformaria em uma Server Action
+// pública, sem nenhum ganho — ninguém precisa chamá-la do navegador.
 
 export default async function classifyTime(min: number, seg: number) {
 

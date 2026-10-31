@@ -42,13 +42,16 @@ export default function ResetPassword() {
 
                     <div style={{width: '100%'}} >
                         <label htmlFor="password">Nova Senha:</label>
-                        <input id="password" type="password" name='password' autoComplete="new-password" defaultValue={state.values && state.values[0] ? state.values[0].password : ''}/>
+                        {/* Sem `defaultValue`: a senha digitada não volta para o HTML */}
+                        <input id="password" type="password" name='password' autoComplete="new-password" minLength={8}/>
                         {state.emptyFields?.includes('password') ? (<p className="error">*Este campo é obrigatório</p>) : ('')}
                     </div>
 
                     <div style={{alignItems: 'center', width: '100%', justifyContent: 'center'}}>
                         <button type="submit" style={{textAlign: 'center'}} className='button red'>Atualizar senha</button>
-                        {(state.message?.includes('Erro desconhecido') || state.emptyFields?.includes('email')) ? (<p className="error">*Redefinição não permitida</p>) : ('')}
+                        {state.message && state.message[0] !== 'Sucesso' && state.message[0] !== '' ? (
+                            <p className="error">{state.message[0]}</p>
+                        ) : ('')}
                     </div>
                 </Form>
             </div>

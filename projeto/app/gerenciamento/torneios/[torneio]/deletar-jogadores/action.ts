@@ -1,5 +1,6 @@
 'use server'
 
+import { requireAdmin } from "@/lib/auth-guard"
 import db from "@/lib/db"
 import { getSupabaseAdmin } from "@/lib/supabase"
 
@@ -102,6 +103,9 @@ async function deleteById(folder: string, id: number) {
 
 
 export async function deleteTournment(id: number) {
+    // Exclusão apaga o torneio, as inscrições (cascade) e os arquivos no
+    // storage. Sem administrador, o erro é lançado e a operação não começa.
+    await requireAdmin()
 
     const folders = [
         "regulamentos",
@@ -116,9 +120,16 @@ export async function deleteTournment(id: number) {
     }
 
 
-    await db.torneio.delete({
-        where: {
-            id
-        }
-    })
+    // Exclusão do torneio: as inscrições saem explicitamente, na mesma
+    // transação, ANTES do torneio.
+    //
+    // Depender só do cascade deixaria a exclusão à mercê da ordem em que o
+    // Postgres processa as FKs: `incricao` referencia `categoria` e `torneio`,
+    // e a categoria do torneio também é apagada em cascata. Quando a FK de
+    // `incricao.uuid_cat` deixar de ser Cascade (migração preparada na T09),
+    // apagar o torneio sem apagar as inscrições antes passaria a falhar.
+    await db.$transaction([
+        db.incricao.deleteMany({ where: { id_torneio: BigInt(id) } }),
+        db.torneio.delete({ where: { id } })
+    ])
 }

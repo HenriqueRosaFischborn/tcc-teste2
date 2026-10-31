@@ -5,9 +5,18 @@ import { sendRequestedMessageEmail } from '@/app/api/email/inscription-solicited
 import { auth } from '@/auth'
 import classifyTime from '@/lib/classifyTime'
 import db from '@/lib/db'
+import {
+  normalizarGenero,
+  validarCategoria,
+  validarDivisao,
+  validarTorneioAberto
+} from '@/lib/regras-inscricao'
+import { validarComprovante } from '@/lib/comprovante'
+import { buscarInscricaoDuplicada } from '@/lib/inscricao-duplicada'
 import { getSupabaseAdmin } from '@/lib/supabase'
 import type { Player } from '@/lib/types'
-import type { InscriptionState, OfficialPlayer } from './types'
+import { verifyCbxId, verifyFideId } from './verify-player'
+import type { InscriptionState, LookupResult, OfficialPlayer } from './types'
 
 const BIRTH_DATE_PATTERN = /^(\d{2})\/(\d{2})\/(\d{4})$/
 
@@ -22,24 +31,28 @@ function toInteger(value: FormDataEntryValue | null): number | null {
   return Number.isInteger(parsed) ? parsed : null
 }
 
-/** Lê os dados do jogador que a tela guarda num campo oculto em JSON. */
-function toOfficialPlayer(value: FormDataEntryValue | null): OfficialPlayer | null {
-  if (typeof value !== 'string' || value.trim() === '') return null
-
-  try {
-    const parsed = JSON.parse(value)
-
-    return typeof parsed?.name === 'string' ? (parsed as OfficialPlayer) : null
-  } catch {
-    return null
-  }
-}
-
 function toText(value: FormDataEntryValue | null): string {
   return typeof value === 'string' ? value.trim() : ''
 }
 
-async function uploadReceipt(file: File, tournamentId: bigint, userId: number, inscriptionUuid: string) {
+/**
+ * Busca o jogador nas bases oficiais.
+ *
+ * Devolve `null` tanto para "não existe" quanto para "site fora do ar" — nos
+ * dois casos a inscrição segue com o nome digitado, em vez de ser bloqueada.
+ */
+async function buscarJogadorOficial(
+  verificar: (id: string) => Promise<LookupResult>,
+  id: number | null
+): Promise<OfficialPlayer | null> {
+  if (id === null) return null
+
+  const resultado = await verificar(String(id))
+
+  return resultado.status === 'found' ? resultado.player : null
+}
+
+async function uploadReceipt(file: File, tournamentId: bigint, userId: number, inscriptionUuid: string): Promise<boolean> {
   const path = `comprovantes/${tournamentId}/${userId}/${inscriptionUuid}`
 
   try {
@@ -48,9 +61,15 @@ async function uploadReceipt(file: File, tournamentId: bigint, userId: number, i
       .from('publics')
       .upload(path, file, { upsert: true, contentType: file.type })
 
-    if (error) console.error('Falha ao enviar o comprovante:', error)
+    if (error) {
+      console.error('Falha ao enviar o comprovante:', error)
+      return false
+    }
+
+    return true
   } catch (error) {
     console.error('Falha ao enviar o comprovante:', error)
+    return false
   }
 }
 
@@ -70,12 +89,20 @@ export async function submitInscription(
     return { status: 'error', message: 'Preencha todos os campos obrigatórios (*).' }
   }
 
+  const genero = normalizarGenero(genre)
+
+  if (!genero) return { status: 'error', message: 'Preencha todos os campos obrigatórios (*).' }
+
+  const [, dia, mes, ano] = birthDate
+
   const category = await db.categoria.findFirst({
     where: { uuid: categoryUuid },
     include: {
       torneio: {
         select: {
           title: true,
+          date_inscri: true,
+          inscri_closed_by_arbiter: true,
           tempo_torneio_time_digitalTotempo: { select: { time: true, plus: true } },
         },
       },
@@ -84,16 +111,25 @@ export async function submitInscription(
 
   if (!category) return { status: 'error', message: GENERIC_ERROR }
 
+  // A tela esconde o formulário quando o prazo venceu ou o árbitro encerrou, mas
+  // esta action é um POST público: sem a checagem aqui, dá para inscrever em
+  // torneio encerrado mandando o formulário na mão.
+  const torneioAberto = validarTorneioAberto(category.torneio)
+
+  if (!torneioAberto.ok) return { status: 'error', message: torneioAberto.motivo }
+
   const fideId = hasIds ? toInteger(formData.get('idfide')) : null
   const cbxId = hasIds ? toInteger(formData.get('idcbx')) : null
 
-  if (hasIds && fideId !== null) {
-    const alreadyInscribed = await db.incricao.findFirst({
-      where: { id_fide: fideId, id_torneio: category.id_torneio },
-    })
+  // Duplicidade é por identidade do JOGADOR (ID FIDE ou CBX), não por conta —
+  // uma conta pode inscrever vários jogadores no mesmo torneio. Sem nenhum dos
+  // dois IDs, não há checagem: comparar por nome barraria homônimos.
+  const duplicada = await buscarInscricaoDuplicada({
+    idTorneio: category.id_torneio,
+    identidade: { idFide: fideId, idCbx: cbxId }
+  })
 
-    if (alreadyInscribed) return { status: 'duplicate' }
-  }
+  if (duplicada) return { status: 'duplicate' }
 
   const session = await auth()
   const email = session?.user?.email
@@ -107,7 +143,32 @@ export async function submitInscription(
   if (!user) return { status: 'error', message: GENERIC_ERROR }
 
   // Divisão escolhida: a absoluta tem prioridade, se o jogador a marcou.
-  const divisions = await db.divisoes.findMany({ where: { id_torneio: category.id_torneio } })
+  const [divisions, categorias] = await Promise.all([
+    db.divisoes.findMany({ where: { id_torneio: category.id_torneio } }),
+    db.categoria.findMany({
+      where: { id_torneio: category.id_torneio },
+      select: {
+        uuid: true,
+        name: true,
+        min_y: true,
+        max_y: true,
+        default_division: true
+      }
+    })
+  ])
+
+  // T15 + T17: a categoria vem do cliente, então precisa ser reconferida no
+  // servidor — existe no torneio, é do gênero do jogador e corresponde à idade.
+  const categoriaValida = validarCategoria({
+    categorias,
+    divisoes: divisions,
+    uuidCategoria: category.uuid,
+    anoNascimento: Number(ano),
+    genero
+  })
+
+  if (!categoriaValida.ok) return { status: 'error', message: categoriaValida.motivo }
+
   const defaultDivision = divisions.find((division) => division.id === category.default_division) ?? null
   const absoluteDivision = divisions.find((division) => division.isAbsolute) ?? null
   const chosenDivision =
@@ -117,18 +178,47 @@ export async function submitInscription(
 
   if (!chosenDivision) return { status: 'error', message: GENERIC_ERROR }
 
+  const divisaoValida = validarDivisao({
+    divisoes: divisions,
+    categoria: category,
+    idDivisao: chosenDivision.id,
+    genero
+  })
+
+  if (!divisaoValida.ok) return { status: 'error', message: divisaoValida.motivo }
+
   const timeClass = await classifyTime(
     Number(category.torneio.tempo_torneio_time_digitalTotempo?.time),
     Number(category.torneio.tempo_torneio_time_digitalTotempo?.plus)
   )
 
-  const playerFide = toOfficialPlayer(formData.get('playerFide'))
-  const playerCbx = toOfficialPlayer(formData.get('playerCbx'))
+  // T16: os dados oficiais NÃO vêm mais do JSON que o navegador envia
+  // (`playerFide`/`playerCbx`). Nome, federação, título e ratings são buscados
+  // aqui, direto na FIDE e na CBX, a partir dos IDs informados.
+  //
+  // Se o site oficial estiver fora do ar, a inscrição NÃO é bloqueada: o nome
+  // digitado é usado e os dados oficiais ficam vazios — o árbitro pode
+  // completá-los depois na tela de análise. As duas consultas correm em paralelo
+  // para não somar o tempo de espera.
+  const [oficialFide, oficialCbx] = await Promise.all([
+    buscarJogadorOficial(verifyFideId, fideId),
+    buscarJogadorOficial(verifyCbxId, cbxId)
+  ])
+
   // Sem tempo classificado (bullet) não existe rating correspondente.
   const ratingOf = (player: OfficialPlayer | null) =>
     player && timeClass !== 'bullet' ? player.ratings[timeClass] : null
 
-  const [, day, month, year] = birthDate
+  // T18: o comprovante é validado ANTES de gravar. Assim um arquivo inválido
+  // não deixa inscrição criada pela metade.
+  const receipt = formData.get('fileComprovante')
+  const temComprovante = receipt instanceof File && receipt.size > 0
+
+  if (temComprovante) {
+    const validacao = validarComprovante(receipt)
+
+    if (!validacao.ok) return { status: 'error', message: validacao.motivo }
+  }
 
   try {
     const inscription = await db.incricao.create({
@@ -137,24 +227,47 @@ export async function submitInscription(
         id_usuario: user.id,
         city,
         club: club === '' ? null : club,
-        data_nasc: new Date(Number(year), Number(month) - 1, Number(day)),
+        data_nasc: new Date(Number(ano), Number(mes) - 1, Number(dia)),
         id_division: chosenDivision.id,
         id_fide: fideId,
         id_cbx: cbxId,
-        genre: genre === 'masc',
-        name: playerFide?.name ?? name,
+        genre: genero === 'masc',
+        name: oficialFide?.name ?? name,
         id_torneio: category.id_torneio,
-        federation: playerFide?.federation ?? undefined,
-        titulo: playerFide?.title ?? undefined,
-        rtg_fide: ratingOf(playerFide),
-        rtg_cbx: ratingOf(playerCbx),
+        federation: oficialFide?.federation ?? undefined,
+        titulo: oficialFide?.title ?? undefined,
+        rtg_fide: ratingOf(oficialFide),
+        rtg_cbx: ratingOf(oficialCbx),
       },
     })
 
-    const receipt = formData.get('fileComprovante')
+    if (temComprovante) {
+      const enviou = await uploadReceipt(receipt, category.id_torneio, user.id, inscription.uuid)
 
-    if (receipt instanceof File && receipt.size > 0) {
-      await uploadReceipt(receipt, category.id_torneio, user.id, inscription.uuid)
+      // Sem o comprovante a inscrição não serve para o árbitro conferir o
+      // pagamento. Antes, a falha só ia para o log e o jogador via "inscrição
+      // concluída". Agora a inscrição é desfeita — e o retorno é diferente
+      // quando o próprio desfazer falha, para não dizer que desfez o que não foi.
+      if (!enviou) {
+        let desfeita = false
+
+        try {
+          await db.incricao.delete({ where: { uuid: inscription.uuid } })
+          desfeita = true
+        } catch (error) {
+          console.error('Falha ao desfazer a inscrição sem comprovante:', error)
+        }
+
+        return desfeita
+          ? {
+              status: 'error',
+              message: 'Não foi possível enviar o comprovante, então sua inscrição não foi concluída. Tente novamente.'
+            }
+          : {
+              status: 'error',
+              message: 'Não foi possível enviar o comprovante. Sua inscrição ficou registrada sem comprovante — anexe-o em "Minhas inscrições" ou avise a organização.'
+            }
+      }
     }
 
     const inscriptionForEmail: Player = {

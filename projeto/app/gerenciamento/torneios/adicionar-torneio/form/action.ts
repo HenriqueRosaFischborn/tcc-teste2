@@ -1,10 +1,22 @@
 'use server'
 
+import { requireAdmin, UnauthorizedError } from "@/lib/auth-guard"
 import db from "@/lib/db"
 import { getSupabaseAdmin } from "@/lib/supabase"
 import { NewTournment } from "@/lib/types"
 
 export default async function addTournmentForm(prev: NewTournment, formdata: FormData): Promise<NewTournment> {
+    // A action é pública: sem administrador, ela nem começa.
+    try {
+        await requireAdmin()
+    } catch (error) {
+        if (error instanceof UnauthorizedError) {
+            return { message: 'Sessão expirada ou sem permissão' }
+        }
+
+        throw error
+    }
+
     
   
     const dataTimeAnalog = String(formdata.get('timeAnalog')).split('+').map(Number)

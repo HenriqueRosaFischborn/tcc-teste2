@@ -7,6 +7,7 @@ import { redirect } from 'next/navigation'
 import { getSupabaseAdmin } from '@/lib/supabase'
 import classifyTime from '@/lib/classifyTime'
 import TournamentProvider from '@/components/TournmentProvider';
+import { requireUser } from '@/lib/auth-guard'
 import db from '@/lib/db'
 import { Player } from '@/lib/types'
 
@@ -15,9 +16,14 @@ export default async function layoutEditInfoTorneio({children, params}: {childre
     
     const {inscricao} = await params
 
-    const inscriData = await db.incricao.findUnique({
+    // O uuid vem da URL: a consulta precisa exigir que a inscrição pertença ao
+    // usuário logado, senão qualquer sessão lê os dados pessoais de outra pessoa.
+    const user = await requireUser()
+
+    const inscriData = await db.incricao.findFirst({
         where: {
-            uuid: inscricao
+            uuid: inscricao,
+            id_usuario: user.id
         },
         include: {
             usuario: {
@@ -50,8 +56,15 @@ export default async function layoutEditInfoTorneio({children, params}: {childre
         }
     })
 
-    if (!inscriData) return
-    if (!inscriData.divisoes) return
+    if (!inscriData) {
+        // Inscrição inexistente ou de outra pessoa: mesmo destino, para não
+        // revelar que o uuid existe.
+        redirect('/minhas-inscricoes')
+    }
+
+    if (!inscriData.divisoes) {
+        redirect('/minhas-inscricoes')
+    }
 
     const inscricaoDetails: Player = {
         city: inscriData.city,

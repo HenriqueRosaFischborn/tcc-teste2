@@ -1,4 +1,8 @@
 
+// Só roda no servidor: este módulo devolve a linha inteira do usuário, incluindo
+// o hash da senha. O build falha se algum Client Component importar isto.
+import 'server-only'
+
 import crypto from "crypto"
 import db from "./db"
 import * as argon2 from "argon2"

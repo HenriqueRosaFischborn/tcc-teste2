@@ -575,14 +575,20 @@ export default function AddTournmentForm({times, tournment, defaultDivisions, de
                     }}>
                         
                         <input type="text" name='defaultTournment' hidden value={JSON.stringify(tournment)}/>
-                        
-                        
+
+                        {/* A action recusa a edição quando alguma categoria/divisão que
+                            seria removida tem jogador inscrito. Sem isto a mensagem
+                            não aparecia em lugar nenhum. */}
+                        {state.message && state.message !== 'Sucesso' ? (
+                            <p style={{width: '100%'}} className='error'>{state.message}</p>
+                        ) : ('')}
+
                         <button type='submit' onClick={(e) => {
                             const divs = Array.from(document.getElementsByName('divisions'))[0]
                             if (!(divs instanceof HTMLInputElement)) return
 
                             if (divs.value != JSON.stringify(defaultDivisions)) {
-                                if (!confirm("Você fez alterações nas categorias ou divisões, se você atualizar as informações todos os jogadores inscritos no torneio serão removidos automaticamente e deverão realizar sua inscrição novamente. Deseja continuar mesmo assim?")) {
+                                if (!confirm("Você alterou categorias ou divisões. As que não têm jogadores inscritos serão atualizadas ou removidas; as que têm inscrições não podem ser excluídas e a edição será recusada. Deseja continuar?")) {
                                     e.preventDefault()
                                 }
                             }

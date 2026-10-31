@@ -261,6 +261,15 @@ p {
   margin-top: 22px;
 }
 
+/* Quando o botão vem antes do formulário, o separador "ou" fica embaixo dele. */
+.google-signin.first {
+  margin-top: 0;
+}
+
+.google-signin.first .auth-divider {
+  margin-top: 22px;
+}
+
 .google-signin form {
   justify-content: center;
 }

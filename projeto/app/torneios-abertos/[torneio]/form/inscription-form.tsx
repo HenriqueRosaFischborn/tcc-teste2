@@ -375,7 +375,7 @@ export default function InscriptionForm() {
             </button>
 
             {state.status === 'duplicate' ? (
-              <p className="error pErr">Este ID FIDE já está inscrito</p>
+              <p className="error pErr">Este jogador já está inscrito neste torneio (mesmo ID FIDE ou CBX).</p>
             ) : (
               ''
             )}

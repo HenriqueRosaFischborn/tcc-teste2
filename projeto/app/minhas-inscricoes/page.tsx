@@ -3,7 +3,6 @@ import './responsive.css'
 import { auth } from '@/auth'
 import db from '@/lib/db'
 import { getSupabaseAdmin } from '@/lib/supabase'
-import { Player } from '@/lib/types'
 import InscriptionsList, { InscriptionItem } from './inscriptions-list'
 
 export default async function MyInscriptions() {
@@ -86,37 +85,6 @@ export default async function MyInscriptions() {
             minute: '2-digit'
         })
 
-        const inscricaoDetails: Player = {
-            city: el.city,
-            club: el.club ? el.club : '',
-            genre: el.genre,
-            data_nasc: el.data_nasc,
-            uuid_cat: el.uuid_cat,
-            status: el.status,
-            id_usuario: el.id_usuario,
-            id_fide: Number(el.id_fide),
-            id_cbx: Number(el.id_cbx),
-            uuid: el.uuid,
-            name: el.name,
-            id_division: Number(el.id_division),
-            id_torneio: Number(el.id_torneio),
-            rtg_fide: Number(el.rtg_fide),
-            rtg_cbx: Number(el.rtg_cbx),
-            categoria: {
-                name: el.categoria.name,
-                uuid: el.categoria.uuid,
-                id_torneio: Number(el.categoria.id_torneio),
-            },
-            divisoes: {
-                id: Number(el.divisoes.id),
-                name: String(el.divisoes.name),
-            },
-            usuario: {
-                id: el.usuario.id,
-                email: el.usuario.email,
-            }
-        }
-
         items.push({
             uuid: el.uuid,
             tournamentId: Number(el.torneio.id),
@@ -134,8 +102,7 @@ export default async function MyInscriptions() {
                 style: 'currency',
                 currency: 'BRL'
             }).format(Number(el.categoria.value)),
-            imageUrl: folders[String(el.torneio.id)] ?? null,
-            player: inscricaoDetails
+            imageUrl: folders[String(el.torneio.id)] ?? null
         })
     }
 

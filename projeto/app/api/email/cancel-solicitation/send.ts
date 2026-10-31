@@ -1,4 +1,12 @@
-'use server'
+// Módulo interno de envio — NÃO é Server Action.
+//
+// O `'use server'` foi removido de propósito: com ele, todo export deste
+// arquivo virava um endpoint POST público e qualquer visitante conseguia
+// disparar e-mail com remetente do clube, destinatários da tabela `emails` e
+// conteúdo montado a partir de um objeto de inscrição forjado.
+//
+// Só deve ser importado por código de servidor, a partir de dados lidos do
+// banco — nunca de entrada do navegador.
 
 import db from '@/lib/db';
 import { Player } from '@/lib/types';

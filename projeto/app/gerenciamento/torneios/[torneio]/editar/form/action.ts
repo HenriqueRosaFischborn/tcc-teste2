@@ -1,25 +1,24 @@
 'use server'
 
+import { requireAdmin, UnauthorizedError } from "@/lib/auth-guard"
 import db from "@/lib/db"
 import { getSupabaseAdmin } from "@/lib/supabase"
 import { NewTournment } from "@/lib/types"
-
-type Categorie = {
-    name: string,
-    value: string,
-    from: number,
-    to: number,
-    divisionFor: string
-}
-
-type Division = {
-    name: string,
-    isAbsolute: boolean,
-    genre: string,
-    categories?: Categorie[]
-}
+import { sincronizarCategorias, type DivisaoDoFormulario } from "./sincronizar-categorias"
 
 export default async function addTournmentForm(prev: NewTournment, formdata: FormData): Promise<NewTournment> {
+    // A action é pública e este arquivo envia uploads antes de gravar, então a
+    // checagem precisa vir antes de qualquer efeito colateral.
+    try {
+        await requireAdmin()
+    } catch (error) {
+        if (error instanceof UnauthorizedError) {
+            return { message: 'Sessão expirada ou sem permissão' }
+        }
+
+        throw error
+    }
+
     const fileFolder = formdata.get('fileFolder') as File
     const fileFolderPath = fileFolder.size != 0 ? `folders/${formdata.get('title')}` : ''
     if (fileFolder.size != 0) {
@@ -97,109 +96,69 @@ export default async function addTournmentForm(prev: NewTournment, formdata: For
 
     if (!(defaultTournment && defaultTournment.id)) return {message: 'Fracasso'}
 
-    const tournment = await db.torneio.update({
-        where: {
-            id: Number(defaultTournment.id)
-        }, 
-        data: {
-            title: formdata.get('title') as string,
-            time_analog: timeAnalog,
-            time_digital: timeDigital,
-            local: formdata.get('local') as string,
-            local_link: formdata.get('localLink') as string,
-            date_event: date_e,
-            date_inscri: date_i,
-            chave_pix: formdata.get('chave-pix') as string,
-            
-            link_chessresults: formdata.get('link-chess-results') as string
-        }
-    })
+    const idTorneio = Number(defaultTournment.id)
+
+    if (!Number.isInteger(idTorneio)) return {message: 'Fracasso'}
 
     const emails = JSON.parse(String(formdata.get('emails'))) as string[]
 
-    await db.emails.deleteMany({
-        where: {
-            id_torneio: tournment.id
-        }
-    })
+    const divisions = JSON.parse(String(formdata.get('divisions'))) as DivisaoDoFormulario[]
 
-    await db.emails.createMany({
-        data: emails.map(email => ({
-            id_torneio: tournment.id,
-            email
-        }))
-    })
-
-    const divisions = JSON.parse(String(formdata.get('divisions')))
-    
-    console.dir(divisions, { depth: null })
+    if (!Array.isArray(divisions)) return {message: 'Fracasso'}
 
     const difference = formdata.get('difference') === "true"
 
-    if (difference) {
-        // Deleta categorias antigas
-        await db.categoria.deleteMany({
+    // Tudo o que grava acontece numa transação só, e a sincronização de
+    // categorias/divisões vem PRIMEIRO porque ela pode recusar a edição (quando
+    // alguém tenta excluir categoria/divisão que tem inscrição). Se recusar,
+    // nem o torneio nem os e-mails mudam.
+    //
+    // Antes da T09, este bloco apagava todas as categorias e recriava — o que,
+    // pelo `onDelete: Cascade` de `incricao.uuid_cat`, apagava **todas as
+    // inscrições do torneio**.
+    const resultado = await db.$transaction(async (tx) => {
+        if (difference) {
+            const sincronizacao = await sincronizarCategorias(tx, BigInt(idTorneio), divisions)
+
+            if (!sincronizacao.ok) {
+                return { ok: false as const, motivo: sincronizacao.motivo }
+            }
+        }
+
+        await tx.torneio.update({
             where: {
-                id_torneio: tournment.id
+                id: idTorneio
+            },
+            data: {
+                title: formdata.get('title') as string,
+                time_analog: timeAnalog,
+                time_digital: timeDigital,
+                local: formdata.get('local') as string,
+                local_link: formdata.get('localLink') as string,
+                date_event: date_e,
+                date_inscri: date_i,
+                chave_pix: formdata.get('chave-pix') as string,
+                link_chessresults: formdata.get('link-chess-results') as string
             }
         })
-    
-        // Deleta divisões antigas
-        await db.divisoes.deleteMany({
+
+        await tx.emails.deleteMany({
             where: {
-                id_torneio: tournment.id
+                id_torneio: BigInt(idTorneio)
             }
         })
-    
-        
-        // Cria divisões
-        await db.divisoes.createMany({
-            data: divisions.map((div: Division )=> ({
-                name: div.name,
-                id_torneio: tournment.id,
-                isAbsolute: div.isAbsolute,
-                genre: div.genre === 'Masculino/Feminino'
-                    ? 'ambos'
-                    : div.genre.toLowerCase()
+
+        await tx.emails.createMany({
+            data: emails.map(email => ({
+                id_torneio: BigInt(idTorneio),
+                email
             }))
         })
-    
-        // Busca divisões criadas
-        const createdDivisions = await db.divisoes.findMany({
-            where: {
-                id_torneio: tournment.id
-            }
-        })
-    
-        // Cria categorias relacionando pelo nome da divisão
-        const categoriesData = divisions.flatMap((div: Division) => {
-            const createdDiv = createdDivisions.find(
-                d => d.name === div.name
-            )
-    
-            if (!div.categories) return
-    
-            return div.categories.map((category: Categorie) => ({
-                name: category.name as string,
-                id_torneio: tournment.id,
-                value: Number(
-                    category.value
-                        .replace('R$', '')
-                        .replace(/\./g, '')
-                        .replace(',', '.')
-                        .trim()
-                ),
-                min_y: category.from as number,
-                max_y: category.to as number,
-                default_division: createdDiv!.id
-            }))
-        })
-    
-        // Cria categorias
-        await db.categoria.createMany({
-            data: categoriesData
-        })
-    }
+
+        return { ok: true as const }
+    })
+
+    if (!resultado.ok) return { message: resultado.motivo }
 
     return {message: 'Sucesso'}
 }

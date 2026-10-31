@@ -1,3 +1,6 @@
+// Só roda no servidor: o build falha se algum Client Component importar isto.
+import 'server-only'
+
 import { PrismaClient } from "@/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 
