@@ -11,8 +11,8 @@ export default function Register() {
                 <Logo width='200' />
                 <h1>Cadastre-se</h1>
 
+                <GoogleSignIn label='Cadastrar com Google' dividerPosition='below' />
                 <RegisterForm />
-                <GoogleSignIn label='Cadastrar com Google' />
                 <p className='auth-alt'>
                     <strong>Já possui uma conta? <a href="/entrar">Entre</a></strong>
                 </p>
