@@ -108,7 +108,7 @@ export default async function MyInscriptions() {
 
     return (
         <div id="tournaments">
-            <h1>Minhas Inscrições</h1>
+            <h1>Minhas inscrições</h1>
             <InscriptionsList items={items} />
         </div>
     )

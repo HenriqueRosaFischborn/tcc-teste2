@@ -46,7 +46,7 @@ export default function CancelSolicitationEmail({
       titulo="Solicitação de cancelamento"
     >
       <Text style={paragrafo}>
-        A inscrição abaixo solicitou o cancelamento. Confira os dados e realize o
+        O cancelamento da inscrição abaixo foi solicitado. Confira os dados e realize o
         cancelamento no sistema.
       </Text>
 

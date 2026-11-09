@@ -19,10 +19,10 @@ export default function RegisterForm() {
 
         if (state.emptyFields?.includes('email')) {
             setEmailError('*Este campo é obrigatório')
-        } else if (state.message?.includes('Email inválido')) {
-            setEmailError('*Email inválido')
-        } else if (state.message?.includes('Este email já existe')) {
-            setEmailError('*Este email já está cadastrado. Entre com a senha ou pelo Google.')
+        } else if (state.message?.includes('E-mail inválido')) {
+            setEmailError('*E-mail inválido')
+        } else if (state.message?.includes('Este e-mail já existe')) {
+            setEmailError('*Este e-mail já está cadastrado. Entre com a senha ou pelo Google.')
         }
     }, [state])
 
@@ -30,7 +30,7 @@ export default function RegisterForm() {
         <>
             <Form action={formAction} className='form' style={{justifyContent: 'center'}}>
                 <div style={{width: '100%'}} >
-                    <label htmlFor="email">Email:</label>
+                    <label htmlFor="email">E-mail:</label>
                     <input id="email" type="email" name='email' autoComplete="email" inputMode="email" defaultValue={state.values && state.values[0] ? state.values[0].email : ''}/>
                     {emailError && <p className="error">{emailError}</p>}
 

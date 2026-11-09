@@ -14,7 +14,7 @@ import {
 } from '@react-email/components';
 import type { CSSProperties, ReactNode } from 'react';
 
-export const NOME_CLUBE = 'Clube de Xadrez de Araranguá';
+export const NOME_CLUBE = 'Clube de Xadrez Araranguá';
 
 // URL pública do site, sem barra no final (ex.: https://cxararangua.com.br).
 // Precisa ser uma URL acessível na internet para a logo e os links funcionarem no email.
@@ -23,14 +23,11 @@ export const SITE_URL = (process.env.NEXT_PUBLIC_APP_URL ?? '').replace(/\/$/, '
 // Coloque o arquivo da logo em /public/logo.png
 export const LOGO_URL = `${SITE_URL}/logo.png`;
 
-// Substitua este bloco pelo seu LINKS já corrigido
 export const LINKS = {
   inicio: `${SITE_URL}/`,
-  nossaHistoria: `${SITE_URL}/nossa-historia`,
-  torneiosAbertos: `${SITE_URL}/torneios`,
-  historicoEventos: `${SITE_URL}/historico`,
-  entrar: `${SITE_URL}/login`,
+  torneiosAbertos: `${SITE_URL}/torneios-abertos`,
   minhasInscricoes: `${SITE_URL}/minhas-inscricoes`,
+  entrar: `${SITE_URL}/entrar`,
   instagram: 'https://instagram.com/cxararangua',
   threads: 'https://www.threads.net/@cxararangua',
   facebook: 'https://facebook.com/cxararangua',
@@ -118,14 +115,11 @@ export function EmailLayout({ preview, titulo, children }: EmailLayoutProps) {
                 <Img src={LOGO_URL} width="64" alt={NOME_CLUBE} style={{ display: 'block' }} />
               </Column>
               <Column style={colunaLinks}>
-                <Link href={LINKS.nossaHistoria} style={linkRodape}>
-                  Nossa História
-                </Link>
                 <Link href={LINKS.torneiosAbertos} style={linkRodape}>
-                  Torneios Abertos
+                  Torneios abertos
                 </Link>
-                <Link href={LINKS.historicoEventos} style={linkRodape}>
-                  Histórico de Eventos
+                <Link href={LINKS.minhasInscricoes} style={linkRodape}>
+                  Minhas inscrições
                 </Link>
                 <Link href={LINKS.entrar} style={linkRodape}>
                   Entrar
@@ -136,7 +130,7 @@ export function EmailLayout({ preview, titulo, children }: EmailLayoutProps) {
                   Instagram @cxararangua
                 </Link>
                 <Link href={LINKS.email} style={linkRodape}>
-                  Email frankbeckerassessoria@gmail.com
+                  E-mail: frankbeckerassessoria@gmail.com
                 </Link>
               </Column>
             </Row>

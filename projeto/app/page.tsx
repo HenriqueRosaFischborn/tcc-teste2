@@ -88,7 +88,7 @@ export default async function Home() {
     },
 
     {
-      nome: 'Leandro Ubialli ',
+      nome: 'Leandro Ubialli',
       funcao: 'Vice-Presidente',
       titulo: 'Candidato a Mestre Nacional',
     },
@@ -118,7 +118,7 @@ export default async function Home() {
       
       
      
-      <h1>Bem-vindo(a) ao <br/>Clube de Xadrez de Araranguá!</h1>
+      <h1>Bem-vindo(a) ao <br/>Clube de Xadrez Araranguá!</h1>
       <img style={{
         width: 'auto',
         height: '100px',
@@ -126,7 +126,7 @@ export default async function Home() {
       }} src="/icons/second-logo.png" alt="comp2" fetchPriority='low' loading='lazy' decoding='async'/>
       
       <div id="tournaments">
-        <h1>Torneios Abertos para Inscrição</h1>
+        <h1>Torneios abertos para inscrição</h1>
 
 
         {tournments.length > 0 ? tournments.map((tournment, i) => {
@@ -224,17 +224,17 @@ export default async function Home() {
           <div>
             <h1>Nossa história</h1>
             
-            <p>Fundado em 2024 por Frank Becker, Leandro Ubialli e Alexandre de Matos, o Clube de Xadrez de Araranguá nasceu com o propósito de incentivar a prática do xadrez, promover o desenvolvimento esportivo e fortalecer a comunidade enxadrística da região.</p>
+            <p>Fundado em 2024 por Frank Becker, Leandro Ubialli e Alexandre de Matos, o Clube de Xadrez Araranguá nasceu com o propósito de incentivar a prática do xadrez, promover o desenvolvimento esportivo e fortalecer a comunidade enxadrística da região.</p>
 
             <p>Desde sua criação, o clube tem se dedicado à organização de torneios, atividades de ensino e encontros entre enxadristas de diferentes níveis e experiência. Atualmente, o clube possui quatro membros titulados: Frank Becker (Árbitro FIDE), Leandro Ubialli (Candidato a Mestre Nacional), Alexandre de Matos (Candidato a Mestre Nacional) e Eduardo da Silva Cardoso (Candidato a Mestre FIDE).</p>
 
-            <p>Hoje, o Clube de Xadrez de Araranguá continua sendo um espaço de aprendizado, estratégia e amizade.</p>
+            <p>Hoje, o Clube de Xadrez Araranguá continua sendo um espaço de aprendizado, estratégia e amizade.</p>
           </div>
         </div>
       </div>
 
       <div id="origins">
-        <h1>Momentos Marcantes do Clube</h1>
+        <h1>Momentos marcantes do clube</h1>
         <h2 style={{marginBottom: '20px'}} >Registros que contam quem somos</h2>
 
         <div className="track rigth" style={{marginBottom: '20px'}}>

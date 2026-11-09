@@ -5,7 +5,7 @@ import { closeInscri, openInscri } from "./editOpenInscri";
 export function ButtonClose({id}: {id: number}) {
     return (
         <button style={{padding: '5px 30px'}} onClick={async () => {
-            if (confirm('Tem certeza que deseja fechar as inscrições para este torneio? As inscrições já realizadas permanecerão salvas')) {
+            if (confirm('Tem certeza de que deseja fechar as inscrições deste torneio? As inscrições já realizadas permanecerão salvas.')) {
                 await closeInscri(id)
                 window.location.reload();
             }
@@ -19,7 +19,7 @@ export function ButtonOpen({id, dateNow, date_inscri}: {id: number, dateNow: Dat
             if (date_inscri < dateNow) {
                 console.log(date_inscri)
                 dateNow.toLocaleString()
-                alert('A data de encerramento das inscrições deste torneio já expirou, para reabrir as inscrições altere a data de encerramento das inscrições em editar informações')
+                alert('A data de encerramento das inscrições deste torneio já expirou. Para reabrir as inscrições, altere a data de encerramento em "Editar informações".')
             } else {
                 await openInscri(Number(id))
                 window.location.reload();

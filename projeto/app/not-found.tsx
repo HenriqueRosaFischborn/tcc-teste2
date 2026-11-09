@@ -13,7 +13,7 @@ export default function NotFound() {
         <div id='not-found'>
             <img
                 src='/logo.png'
-                alt='Clube de Xadrez de Araranguá'
+                alt='Clube de Xadrez Araranguá'
                 width='190'
                 height='auto'
                 fetchPriority='low'

@@ -69,10 +69,10 @@ export default function AddTournmentForm({times}: {times?: {time: number, plus: 
         const x = await verifyEmail(value)
 
         if (value.trim() == '' || !x) {
-            setEmailError('Este não é um email válido')
+            setEmailError('Este não é um e-mail válido')
         } else {
             if (emails.includes(value)) {
-                setEmailError('Este email já está cadastrado')
+                setEmailError('Este e-mail já está cadastrado')
             } else {
                 setEmailError('')
                 setEmails(prev => [...prev, value])
@@ -301,7 +301,7 @@ export default function AddTournmentForm({times}: {times?: {time: number, plus: 
                                 <input type="text" name='local' onBlur={completeBlur} className='needed'placeholder='Ex.: Shopping Center - Rua tal'/>
                             </div>
                             <div>
-                                <label htmlFor="localLink">Link do local (google maps):</label>
+                                <label htmlFor="localLink">Link do local (Google Maps):</label>
                                 <div style={{flex: 1, flexDirection: 'column', height: 'fit-content'}}>
                                     <input type="text" name='localLink' onBlur={(e) => {completeBlur(); localBlur(e.currentTarget.value)}} placeholder='https://maps.app.goo.gl/...'/>
                                     {errorLocal ? ( <p className='error'>*Este não é um link válido</p> ) : ('')}
@@ -468,21 +468,21 @@ export default function AddTournmentForm({times}: {times?: {time: number, plus: 
                 
 
                 <div id='emails'>
-                    <h3>Emails de envio da lista de jogadores:</h3>
+                    <h3>E-mails de envio da lista de jogadores:</h3>
                     <div className='form' style={{width: 'calc(50% - 15px)'}}>
                         <div  style={{width: '100%'}}>
-                            <label >Email:</label>
+                            <label >E-mail:</label>
                             <input id='input-email' type="text" onBlur={completeBlur}/>
                             {emailError != '' ? (
                                 <p className='error'>{emailError}</p>
                             ) : ('')}
                         </div>
-                        <button onClick={() => giveEmail()} type='button' className='button black'>Adicionar email</button>
+                        <button onClick={() => giveEmail()} type='button' className='button black'>Adicionar e-mail</button>
                     </div>
                     
                         <table>
                             <thead>
-                                <tr><th>Emails:</th></tr>
+                                <tr><th>E-mails:</th></tr>
                             </thead>
                             <tbody>
                                 {emails.length > 0 ? (
@@ -508,7 +508,7 @@ export default function AddTournmentForm({times}: {times?: {time: number, plus: 
                                     <tr>
                                         <td>
                                             <div className='td-width'>
-                                                <p>Não há emails cadastrados</p>
+                                                <p>Não há e-mails cadastrados</p>
                                             </div>
                                         </td>
                                     </tr>

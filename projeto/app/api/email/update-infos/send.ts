@@ -28,7 +28,7 @@ export async function sendUpdateInscriptionEmail(inscricaoAntigas: Player, inscr
     const emails = emailsData.map(el => el.email)
     
     const { data, error } = await resend.emails.send({
-      from: `CXA Clube de Xadrez de Araranguá <updateinscription@testetcc.com.br>`,
+      from: `CXA Clube de Xadrez Araranguá <updateinscription@testetcc.com.br>`,
       to: emails,
       subject: 'As informações de uma inscrição foram atualizadas',
       html: html

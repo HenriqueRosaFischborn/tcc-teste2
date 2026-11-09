@@ -231,7 +231,7 @@ export function SelectCategorie({inscricao, hasFide, errorInfo, setindividualPri
                             </h3>
                         </div>
 
-                        <p className="obs">*A categoria selecionada pode não corresponder exatamente a sua idade por não estar disponível neste torneio. Nesse caso, o sistema escolherá automaticamente a categoria mais adequada</p>  
+                        <p className="obs">*A categoria selecionada pode não corresponder exatamente à sua idade por não estar disponível neste torneio. Nesse caso, o sistema escolherá automaticamente a categoria mais adequada.</p>
                     </div>
                     
                     {cat.absolute_division && cat.absolute_division != cat.default_division ? (

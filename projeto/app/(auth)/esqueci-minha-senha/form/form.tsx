@@ -60,7 +60,7 @@ export default function ResetPassword() {
                 ) : (
                     <Form action={enviar} className='form'>
                         <div style={{width: '100%'}}>
-                            <label htmlFor="email">Email da conta:</label>
+                            <label htmlFor="email">E-mail da conta:</label>
                             <input
                                 id="email"
                                 type="email"

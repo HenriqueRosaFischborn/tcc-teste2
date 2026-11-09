@@ -43,7 +43,7 @@ export default function ConfirmedMessageEmail({
   return (
     <EmailLayout
       preview={`Inscrição confirmada no torneio ${torneio}`}
-      titulo="Inscrição Confirmada"
+      titulo="Inscrição confirmada"
     >
       <Text style={paragrafo}>
         Sua inscrição foi confirmada! Confira abaixo os dados registrados. Se algo

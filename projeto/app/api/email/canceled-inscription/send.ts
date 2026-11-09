@@ -16,7 +16,7 @@ export async function sendCancelledMessageEmail(inscricao: Player, torneioTitle:
     const html = await render(CancelledInscriptionEmail({ inscricao, torneioTitle }))
 
     const { data, error } = await resend.emails.send({
-      from: 'CXA Clube de Xadrez de Araranguá <canceledmessage@testetcc.com.br>',
+      from: 'CXA Clube de Xadrez Araranguá <canceledmessage@testetcc.com.br>',
       to: [inscricao.usuario.email],
       subject: 'Inscrição cancelada',
       html: html

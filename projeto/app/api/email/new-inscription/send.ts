@@ -34,7 +34,7 @@ export async function sendNewInscription(inscricao: Player, torneioTitle: string
     
     try {
     const { data, error } = await resend.emails.send({
-      from: `CXA - Clube de Xadrez de Araranguá <newinscription@testetcc.com.br>`,
+      from: `CXA - Clube de Xadrez Araranguá <newinscription@testetcc.com.br>`,
       to: emails,
       subject: 'Nova inscrição solicitada',
       html: html

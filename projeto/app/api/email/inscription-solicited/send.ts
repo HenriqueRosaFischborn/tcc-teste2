@@ -16,7 +16,7 @@ export async function sendRequestedMessageEmail(inscricao: Player, torneioTitle:
     const html = await render(RequestedInscriptionEmail({ inscricao, torneioTitle }))
 
     const { data, error } = await resend.emails.send({
-      from: 'CXA Clube de Xadrez de Araranguá <confirmedmessage@testetcc.com.br>',
+      from: 'CXA Clube de Xadrez Araranguá <confirmedmessage@testetcc.com.br>',
       to: [inscricao.usuario.email],
       subject: 'Inscrição solicitada',
       html: html

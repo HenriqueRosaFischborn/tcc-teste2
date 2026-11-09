@@ -20,7 +20,7 @@ export default function ResetMessageEmail({ email, token }: ResetMessageEmailPro
       <Text style={paragrafo}>Olá,</Text>
       <Text style={paragrafo}>
         Recebemos a solicitação para redefinir a senha da sua conta no Clube de
-        Xadrez de Araranguá. Para escolher uma nova senha, clique no botão abaixo.
+        Xadrez Araranguá. Para escolher uma nova senha, clique no botão abaixo.
       </Text>
 
       <Section style={areaBotao}>

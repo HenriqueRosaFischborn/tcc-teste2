@@ -36,12 +36,12 @@ export default function ResetPassword() {
                     <input type="hidden" name="token" value={token} readOnly/>
 
                     <div style={{width: '100%'}}>
-                        <p><strong>Email:</strong></p>
+                        <p><strong>E-mail:</strong></p>
                         <p style={{color: 'var(--mainred)'}}><strong>{email}</strong></p>
                     </div>
 
                     <div style={{width: '100%'}} >
-                        <label htmlFor="password">Nova Senha:</label>
+                        <label htmlFor="password">Nova senha:</label>
                         {/* Sem `defaultValue`: a senha digitada não volta para o HTML */}
                         <input id="password" type="password" name='password' autoComplete="new-password" minLength={8}/>
                         {state.emptyFields?.includes('password') ? (<p className="error">*Este campo é obrigatório</p>) : ('')}

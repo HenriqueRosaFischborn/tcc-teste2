@@ -11,7 +11,7 @@ import { requestCancellation } from './action'
 export default function ButtonCancelSolicitation({ inscricaoUuid }: { inscricaoUuid: string }) {
     async function solicitar() {
         const confirmado = confirm(
-            'Tem certeza que deseja solicitar cancelamento dessa inscrição? Um email será enviado ao árbitro deste torneio para que haja o seu cancelamento, depois de clicar em "ok" não é necessário solicitar novamente'
+            'Tem certeza de que deseja solicitar o cancelamento desta inscrição? Um e-mail será enviado ao árbitro deste torneio para solicitar o cancelamento. Depois de clicar em "OK", não é necessário solicitar novamente.'
         )
 
         if (!confirmado) return
@@ -24,7 +24,7 @@ export default function ButtonCancelSolicitation({ inscricaoUuid }: { inscricaoU
                 return
             }
 
-            alert('Solicitação enviada')
+            alert('Solicitação enviada.')
         } catch {
             alert('Não foi possível enviar a solicitação agora. Tente novamente em instantes.')
         }

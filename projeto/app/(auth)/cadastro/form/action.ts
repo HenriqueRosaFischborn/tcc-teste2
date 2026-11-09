@@ -41,14 +41,14 @@ export default async function registerAction(preState: FormState, formdata: Form
 
     if (!(await verifyEmail(resData.email))) {
         error = true
-        message.push('Email inválido')
+        message.push('E-mail inválido')
     }
 
     const user = await findUserByEmail(resData.email)
 
     if (user) {
        error = true
-       message.push('Este email já existe')
+       message.push('Este e-mail já existe')
     }
 
     if (error) {

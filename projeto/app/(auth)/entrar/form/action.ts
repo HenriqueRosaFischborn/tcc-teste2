@@ -36,7 +36,7 @@ export default async function loginAction(prevState: FormState, formdata: FormDa
 
     if (!(await verifyEmail(resData.email))) {
         error = true
-        message.push('Email inválido')
+        message.push('E-mail inválido')
     }
 
     try {

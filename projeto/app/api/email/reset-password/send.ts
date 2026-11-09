@@ -14,7 +14,7 @@ export async function sendEmail(email: string, token: string) {
     const html = await render(ResetMessageEmail({ email, token }))
     
     const { data, error } = await resend.emails.send({
-      from: `CXA Clube de Xadrez de Araranguá <resetpassword@testetcc.com.br>`,
+      from: `CXA Clube de Xadrez Araranguá <resetpassword@testetcc.com.br>`,
       to: [email],
       subject: 'Redefinir senha',
       html: html

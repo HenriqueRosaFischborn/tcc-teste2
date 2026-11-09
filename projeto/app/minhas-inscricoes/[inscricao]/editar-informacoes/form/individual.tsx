@@ -247,7 +247,7 @@ export default function FormEditInscriIndividual() {
                         
                         {hasFide ? (<>
                             <div style={{width: 'calc(50% - 15px)'}}>
-                                <label htmlFor="idfide">ID Fide: <p className="ast">*</p></label>
+                                <label htmlFor="idfide">ID FIDE: <p className="ast">*</p></label>
                                 <input id="form-fide" type="text" name="idfide" defaultValue={idFide ? idFide : inscricao.id_fide} onKeyDown={handleEnterBlur} maxLength={8} inputMode="numeric"  onInput={(e) => {e.currentTarget.value = e.currentTarget.value.replace(/\D/g, '')}} onBlur={(e) => sendIds(e.currentTarget)}/>
                                 {errorIdFide != '' ? <p className="error">{errorIdFide}</p> : ''}
                                 {fideIndisponivel != '' ? <p className="obs obs-fide">*A FIDE não respondeu ({fideIndisponivel}). A conferência segue pela CBX — o ID será reconferido pela organização.</p> : ''}
@@ -275,14 +275,14 @@ export default function FormEditInscriIndividual() {
                             <div id="qr-div" >
                                 <div>
                                     <h2>Efetuar pagamento e confirmar inscrição:</h2>
-                                    <p>Escaneie o QR Code com sua conta bancária ou use a chave Pix e confirme sua inscrição</p>    
+                                    <p>Escaneie o QR Code com sua conta bancária ou use a chave Pix e confirme sua inscrição.</p>
                                     <div id="qr-key">
                                         <p><strong>Ou copie o código:</strong></p>
                                         <div className="input">
                                             <p>{qrKey}</p>
                                             <img src="/icons/copy.png" alt="copy" onClick={() => {
                                                 navigator.clipboard.writeText(String(qrKey))
-                                                alert('Copiado para área de transferência...')
+                                                alert('Copiado para a área de transferência.')
                                             }}/>
                                         </div>
                                     </div>

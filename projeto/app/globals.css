@@ -112,7 +112,6 @@ article {
 h1 {
   font-size: 30pt;
   font-weight: 500;
-  padding: 0px 5px;
   text-align: center;
   width: fit-content;
   margin: 0px;
@@ -123,7 +122,6 @@ h2 {
   font-weight: 400;
   text-align: center;
   margin: 0px;
-  padding: 0px 5px;
 }
 /* link */
 

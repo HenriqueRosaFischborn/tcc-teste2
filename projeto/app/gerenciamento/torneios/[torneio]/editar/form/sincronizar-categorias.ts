@@ -127,7 +127,7 @@ export async function sincronizarCategorias(
     if (bloqueios.length > 0) {
         return {
             ok: false,
-            motivo: `Alterações não salvas: não é possível excluir ${bloqueios.join('; ')} porque há jogadores inscritos usando. Mova essas inscrições para outra categoria ou divisão antes de excluir.`
+            motivo: `Alterações não salvas: não é possível excluir ${bloqueios.join('; ')} porque há jogadores inscritos nelas. Mova essas inscrições para outra categoria ou divisão antes de excluir.`
         }
     }
 

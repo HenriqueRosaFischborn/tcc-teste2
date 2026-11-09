@@ -86,7 +86,7 @@ export default async function OpenTournments() {
     return (
         <>
             <div id="tournaments">
-                <h1>Torneios Abertos para Inscrição</h1>
+                <h1>Torneios abertos para inscrição</h1>
 
                 {list.length > 0
                     ? <TournamentsList tournaments={list} />

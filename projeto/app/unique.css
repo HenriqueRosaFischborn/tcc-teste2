@@ -1,5 +1,5 @@
 /* HEROBAR ===============================================================================================================*/
-
+/* p-content h1 */
 #herobar {
     padding: 80px 0px 80px 0px;
     width: 100%;
@@ -326,7 +326,7 @@ z-index: 2;
 }
 
 #p-content h1{
-    margin: 20px;
+    margin: 20px 20px 20px 0px;
 }
 
 #p-content > div {

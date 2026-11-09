@@ -32,7 +32,7 @@ export default function Footer({user, admin}: {user: boolean, admin: boolean}) {
                 
                 
                 
-                <h4>&copy; Clube de Xadrez de Araranguá, {year}. Todos os direitos reservados.</h4>
+                <h4>&copy; Clube de Xadrez Araranguá, {year}. Todos os direitos reservados.</h4>
             </footer>
         </>
     )

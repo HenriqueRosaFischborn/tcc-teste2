@@ -161,7 +161,7 @@ export default async function layoutEditInfoTorneio({children, params}: {childre
                     <div id='informations'>
                         <div id='l1' style={{marginBottom: '20px', gap: '30px'}}>
                             <div style={{flexDirection: 'column', gap: '30px'}}>
-                                <h2 id='info' style={{textAlign: 'start', fontSize: '22pt'}}>informações do torneio:</h2>
+                                <h2 id='info' style={{textAlign: 'start', fontSize: '22pt'}}>Informações do torneio:</h2>
                                 {reg ? 
                                     <a href={reg} className='button red' target='_blank' rel="noopener noreferrer">Regulamento</a>
                                 : ''}

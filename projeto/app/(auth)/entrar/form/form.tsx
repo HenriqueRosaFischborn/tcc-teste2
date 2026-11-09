@@ -14,11 +14,11 @@ import { useSearchParams } from "next/navigation"
  */
 const oauthErrors: Record<string, string> = {
     AccessDenied: '*O acesso pelo Google foi cancelado. Tente novamente.',
-    OAuthAccountNotLinked: '*Este email já está cadastrado de outra forma. Entre com sua senha.',
+    OAuthAccountNotLinked: '*Este e-mail já está cadastrado de outra forma. Entre com sua senha.',
     OAuthCallbackError: '*Não foi possível concluir o login com o Google. Tente novamente.',
     OAuthSignInError: '*Não foi possível iniciar o login com o Google. Tente novamente.',
     Configuration: '*O login com o Google não está configurado corretamente. Avise o administrador.',
-    Verification: '*Não foi possível verificar o email da conta. Tente novamente.',
+    Verification: '*Não foi possível verificar o e-mail da conta. Tente novamente.',
 }
 
 export default function LoginForm() {
@@ -48,8 +48,8 @@ export default function LoginForm() {
 
         if (state.emptyFields?.includes('email')) {
             setEmailError('*Este campo é obrigatório')
-        } else if (state.message?.includes('Email inválido')) {
-            setEmailError('*Email inválido')
+        } else if (state.message?.includes('E-mail inválido')) {
+            setEmailError('*E-mail inválido')
         } else if (state.message?.includes('Senha ou usuário incorretos')) {
             setEmailError('*Senha ou usuário incorretos')
         }
@@ -72,7 +72,7 @@ export default function LoginForm() {
             const formatoValido = await verifyEmail(email)
 
             if (!formatoValido) {
-                setEmailError('*Este não é um email válido')
+                setEmailError('*Este não é um e-mail válido')
             } else {
                 setEmailError('')
                 window.location.href = `/esqueci-minha-senha?email=${encodeURIComponent(email)}`
@@ -88,7 +88,7 @@ export default function LoginForm() {
                 )}
 
                 <div style={{width: '100%'}} >
-                    <label htmlFor="email">Email:</label>
+                    <label htmlFor="email">E-mail:</label>
                     <input id="email" type="email" name='email' autoComplete="email" inputMode="email" defaultValue={state.values && state.values[0] ? state.values[0].email : ''}/>
                     {emailError && <p className="error">{emailError}</p>}
                 </div>

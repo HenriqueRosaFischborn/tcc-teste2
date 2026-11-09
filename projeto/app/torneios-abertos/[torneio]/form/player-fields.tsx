@@ -148,9 +148,9 @@ export default function PlayerFields({
             </div>
 
             <p className="obs">
-              *A categoria selecionada pode não corresponder exatamente a sua idade por não estar
+              *A categoria selecionada pode não corresponder exatamente à sua idade por não estar
               disponível neste torneio. Nesse caso, o sistema escolherá automaticamente a categoria
-              mais adequada
+              mais adequada.
             </p>
           </div>
 

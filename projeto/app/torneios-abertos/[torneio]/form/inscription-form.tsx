@@ -264,7 +264,7 @@ export default function InscriptionForm() {
   async function copyPixKey() {
     try {
       await navigator.clipboard.writeText(String(tournament.pixKey))
-      alert('Copiado para área de transferência...')
+      alert('Copiado para a área de transferência.')
     } catch {
       // Navegador sem permissão de área de transferência: o código continua visível na tela.
     }
@@ -309,7 +309,7 @@ export default function InscriptionForm() {
         {hasIds ? (
           <>
             <div style={{ width: 'calc(50% - 15px)' }}>
-              <label htmlFor="form-fide">ID Fide: <p className="ast">*</p></label>
+              <label htmlFor="form-fide">ID FIDE: <p className="ast">*</p></label>
               <input
                 id="form-fide"
                 type="text"
@@ -394,7 +394,7 @@ export default function InscriptionForm() {
                 <h2>Efetuar pagamento:</h2>
                 <p>
                   Escaneie o QR Code com sua conta bancária ou use a chave Pix e confirme sua
-                  inscrição
+                  inscrição.
                 </p>
                 <div id="qr-key">
                   <p><strong>Ou copie o código:</strong></p>

@@ -34,7 +34,7 @@ export async function sendCancelSolicitation(inscricao: Player, torneioTitle: st
     
     try {
     const { data, error } = await resend.emails.send({
-      from: `CXA - Clube de Xadrez de Araranguá <cancelsolicitation@testetcc.com.br>`,
+      from: `CXA - Clube de Xadrez Araranguá <cancelsolicitation@testetcc.com.br>`,
       to: emails,
       subject: 'Solicitação de cancelamento de inscrição',
       html: html

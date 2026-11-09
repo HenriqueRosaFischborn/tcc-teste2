@@ -160,7 +160,7 @@ export default function BodyClient({nameTournment, players, comprovantes, catego
                                     <th>ID CBX:</th>
                                     <th>Rating FIDE:</th>
                                     <th>Rating CBX:</th>
-                                    <th>Titulação</th>
+                                    <th>Titulação:</th>
                                     <th>Cidade:</th>
                                     <th>Clube:</th>
                                     <th>Federação:</th>
@@ -168,7 +168,7 @@ export default function BodyClient({nameTournment, players, comprovantes, catego
                                     <th>Gênero:</th>
                                     <th>Divisão:</th>
                                     <th>Categoria:</th>
-                                    <th>Email: </th>
+                                    <th>E-mail:</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -277,7 +277,7 @@ export default function BodyClient({nameTournment, players, comprovantes, catego
                         <input type="text" hidden name='nameTournment' value={nameTournment}/>
                         <input type="text" hidden name='defaultInscri' value={JSON.stringify(defaultInscri)}/>
                         <input type="text" hidden name='nowInscri' value={JSON.stringify(nowInscri)}/>
-                        <button id='save-changes' type='submit' className={`button red ${(JSON.stringify(defaultInscri) != JSON.stringify(nowInscri)) && invalidDates.length === 0 ? '' : 'disableDiv'}`}>Salvar Alterações</button>
+                        <button id='save-changes' type='submit' className={`button red ${(JSON.stringify(defaultInscri) != JSON.stringify(nowInscri)) && invalidDates.length === 0 ? '' : 'disableDiv'}`}>Salvar alterações</button>
                     </Form>
                     {invalidDates.length === 0 ? '' : <p style={{marginTop: '-15px'}} className='error'>*Preencha as datas corretamente</p>}
                     </>) : (

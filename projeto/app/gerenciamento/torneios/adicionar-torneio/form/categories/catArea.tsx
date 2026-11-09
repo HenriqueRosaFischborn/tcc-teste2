@@ -161,7 +161,7 @@ export default function CategorieArea({divisionsBasic, setErrorCategories}: {div
                 setDateError('')
                 
                 if (String(categorie.to).length != 4 || String(categorie.from).length != 4) {
-                    setDateError('*insira anos válidos')
+                    setDateError('*Insira anos válidos')
                 } else {
                     setDateError('')
 

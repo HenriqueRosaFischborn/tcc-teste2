@@ -52,7 +52,7 @@ export default function Users({ usuarios }: { usuarios: UsuarioListado[] }) {
                 <table>
                     <thead>
                         <tr>
-                            <th style={{ width: '500px' }}>Email:</th>
+                            <th style={{ width: '500px' }}>E-mail:</th>
                             <th id='th-padding-2'>Função:</th>
                         </tr>
                     </thead>

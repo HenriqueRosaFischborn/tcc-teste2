@@ -15,7 +15,7 @@ export async function sendConfirmedMessageEmail(inscricao: Player, torneio: stri
     const html = await render(ConfirmedMessageEmail({ inscricao, torneio }))
 
     const { data, error } = await resend.emails.send({
-      from: 'CXA Clube de Xadrez de Araranguá <confirmedmessage@testetcc.com.br>',
+      from: 'CXA Clube de Xadrez Araranguá <confirmedmessage@testetcc.com.br>',
       to: [inscricao.usuario.email],
       subject: 'Inscrição confirmada',
       html: html
