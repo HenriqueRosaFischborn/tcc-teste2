@@ -111,7 +111,7 @@ export default async function Home() {
       <div id="herobar">
         <img src="/logo.png" alt="logo" fetchPriority='low' loading='lazy' decoding='async'/>
         <div>
-          <h1 >"O xadrez é a gisnástica da inteligência"</h1>
+          <h1 >"O xadrez é a ginástica da inteligência"</h1>
           <h2>- Johann Wolfgang</h2>
         </div>
       </div>
